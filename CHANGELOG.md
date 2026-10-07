@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 4.5.0
 
 - Rename: formbase is now Formstep, at formstep.io. Every label, help text, sample and error message says Formstep, and the package is `formstep-zapier`. No trigger, action, search, input or auth key changes, so existing Zaps keep their mappings.
 - Update the API host: API calls and the OAuth authorize, token and refresh endpoints default to `https://api.formstep.io` instead of `https://api.formbase.so`. `BASE_URL` still overrides it. Existing connections stay: both hosts serve the same backend, so a token issued before the switch refreshes on the new host without reconnecting.

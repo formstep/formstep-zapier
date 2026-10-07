@@ -169,9 +169,11 @@ npx convex run internal/oauthClients:seedZapierOAuthClient \
 #    equal step 1's value.
 npx zapier-platform env:set 1.0.0 \
   CLIENT_ID=fboc_zapier \
-  CLIENT_SECRET='pick_a_long_random_secret' \
-  BASE_URL=https://api.formstep.io
+  CLIENT_SECRET='pick_a_long_random_secret'
 ```
+
+Leave `BASE_URL` unset: the app defaults to `https://api.formstep.io`, and a
+value set here overrides that default.
 
 `client_id` defaults to `fboc_zapier` (override with a `clientId` arg). This is a
 separate row from public DCR clients (e.g. Claude MCP), so it never interferes
@@ -192,9 +194,11 @@ npx zapier-platform push
 npx zapier-platform promote 1.0.0
 ```
 
-After pushing this change, turn every existing Formstep Zap off and back on (or
-recreate its trigger). This registers a new subscription containing the required
-idle window and signing secret. Old subscriptions are intentionally unsupported.
+Before promoting a new version, run `npx zapier-platform env:get <version>` and
+check that `CLIENT_ID` and `CLIENT_SECRET` are set and `BASE_URL` is not.
+Existing Zaps keep their subscriptions and signing secrets across versions, so
+`npx zapier-platform migrate <old> <new>` moves them without turning any Zap off
+and on.
 
 > CLI bin is `zapier-platform` (was `zapier`) since `zapier-platform-cli` v19.
 > `validate` needs the app registered first (expects `.zapierapprc`).

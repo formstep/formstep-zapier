@@ -1,6 +1,6 @@
 {
   "name": "formstep-zapier",
-  "version": "4.4.2",
+  "version": "4.5.0",
   "description": "Official Formstep integration for Zapier — resume Zaps when a customer completes a request or submits a form.",
   "license": "MIT",
   "homepage": "https://formstep.io",
