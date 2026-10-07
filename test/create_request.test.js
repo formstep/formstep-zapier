@@ -1,5 +1,5 @@
 // BASE_URL is read at module load in utils/request, so set it before requiring.
-process.env.BASE_URL = 'https://fake.formbase.test'
+process.env.BASE_URL = 'https://fake.formstep.test'
 
 const nock = require('nock')
 const create = require('../creates/create_request')
@@ -59,7 +59,7 @@ async function createParamsFor(inputData) {
   rpc('requests.create', (params) => {
     sent = params
     return true
-  }).reply(200, { ok: true, data: { id: 'req_1', status: 'pending', url: 'https://forms.formbase.test/r/rq_1', deduplicated: false } })
+  }).reply(200, { ok: true, data: { id: 'req_1', status: 'pending', url: 'https://form.formstep.test/r/rq_1', deduplicated: false } })
   const result = await create.operation.perform(makeZ(), { authData, inputData: { formId: 'form_1', ...inputData } })
   return { sent, result }
 }
@@ -167,7 +167,7 @@ describe('perform (requests.create)', () => {
       },
       readonly: ['company_name'],
     })
-    expect(result).toMatchObject({ id: 'req_1', url: 'https://forms.formbase.test/r/rq_1' })
+    expect(result).toMatchObject({ id: 'req_1', url: 'https://form.formstep.test/r/rq_1' })
   })
 
   test('derives idempotencyKey from externalId, so a re-run Zap reuses the request', async () => {

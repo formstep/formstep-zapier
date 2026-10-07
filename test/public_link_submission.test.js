@@ -1,5 +1,5 @@
 // BASE_URL is read at module load in utils/request, so set it before requiring.
-process.env.BASE_URL = 'https://fake.formbase.test'
+process.env.BASE_URL = 'https://fake.formstep.test'
 
 const nock = require('nock')
 const hydrators = require('../hydrators')
@@ -281,7 +281,7 @@ describe('perform (a delivery)', () => {
   })
 
   test('adds the lazy PDF File hydrator when the event carries a PDF link', async () => {
-    const event = completed({ pdfUrl: 'https://api.formbase.so/api/storage/x' })
+    const event = completed({ pdfUrl: 'https://api.formstep.io/api/storage/x' })
     const [item] = await trigger.operation.perform(makeZ(), makeSignedWebhookBundle(event))
     expect(item.data.submission.pdfFile).toBe('hydrate-file:form_1:sub_1')
   })
@@ -292,7 +292,7 @@ describe('perform (a delivery)', () => {
   })
 
   test('fails loudly when a PDF event carries no ids to hydrate from', async () => {
-    const event = { id: 'e1', type: 'submission.completed', data: { form: {}, submission: { pdfUrl: 'https://api.formbase.so/api/storage/x' } } }
+    const event = { id: 'e1', type: 'submission.completed', data: { form: {}, submission: { pdfUrl: 'https://api.formstep.io/api/storage/x' } } }
     await expect(trigger.operation.perform(makeZ(), makeSignedWebhookBundle(event))).rejects.toThrow(/hydrate it from/i)
   })
 })
@@ -315,10 +315,10 @@ describe('downloadSubmissionPdf hydrator', () => {
   test('calls submissions.pdf and returns the proxy URL', async () => {
     rpc('submissions.pdf', (params) => params.formId === 'form_1' && params.submissionId === 'sub_1').reply(200, {
       ok: true,
-      data: { url: 'https://api.formbase.so/api/storage/pdf', filename: 'formbase-submission-sub_1.pdf', contentType: 'application/pdf', byteLength: 123 },
+      data: { url: 'https://api.formstep.io/api/storage/pdf', filename: 'formbase-submission-sub_1.pdf', contentType: 'application/pdf', byteLength: 123 },
     })
 
     const result = await hydrators.downloadSubmissionPdf(makeZ(), { authData, inputData: { formId: 'form_1', submissionId: 'sub_1' } })
-    expect(result).toBe('https://api.formbase.so/api/storage/pdf')
+    expect(result).toBe('https://api.formstep.io/api/storage/pdf')
   })
 })

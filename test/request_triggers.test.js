@@ -1,5 +1,5 @@
 // BASE_URL is read at module load in utils/request, so set it before requiring.
-process.env.BASE_URL = 'https://fake.formbase.test'
+process.env.BASE_URL = 'https://fake.formstep.test'
 
 const nock = require('nock')
 const requestCompleted = require('../triggers/request_completed')
@@ -156,7 +156,7 @@ describe('perform (a delivery)', () => {
   })
 
   test('a completed request with a PDF gets the lazy PDF File output like a submission', async () => {
-    const event = requestEvent('request.completed', { form: { id: 'form_1' }, submission: { id: 'sub_1', pdfUrl: 'https://api.formbase.so/api/storage/x' }, answers: {}, display: {} })
+    const event = requestEvent('request.completed', { form: { id: 'form_1' }, submission: { id: 'sub_1', pdfUrl: 'https://api.formstep.io/api/storage/x' }, answers: {}, display: {} })
     const [item] = await requestCompleted.operation.perform(makeZ(), makeSignedWebhookBundle(event))
     expect(item.data.submission.pdfFile).toBe('hydrate-file:form_1:sub_1')
     expect(item.data.request).toEqual(event.data.request)

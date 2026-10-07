@@ -3,7 +3,7 @@
 // Deployment origin. Defaults to formbase cloud; override via the BASE_URL
 // Zapier env var for a self-hosted deployment. Must match the origin whose
 // /oauth/* endpoints back this integration's OAuth config.
-const BASE_URL = String(process.env.BASE_URL || 'https://api.formbase.so').replace(/\/+$/, '')
+const BASE_URL = String(process.env.BASE_URL || 'https://api.formstep.io').replace(/\/+$/, '')
 
 /**
  * Call a formbase JSON-RPC method and return its `data`.

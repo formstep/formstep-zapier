@@ -1,5 +1,5 @@
 // BASE_URL is read at module load in utils/request, so set it before requiring.
-process.env.BASE_URL = 'https://fake.formbase.test'
+process.env.BASE_URL = 'https://fake.formstep.test'
 
 const nock = require('nock')
 const cancel = require('../creates/cancel_request')
@@ -44,7 +44,7 @@ describe('remind_request', () => {
 })
 
 describe('get_request', () => {
-  const view = { ...summary, status: 'completed', outcome: 'approve', url: 'https://forms.formbase.test/r/rq_1', answers: { company_name: 'Acme' }, display: { company_name: 'Acme' }, timeline: [] }
+  const view = { ...summary, status: 'completed', outcome: 'approve', url: 'https://form.formstep.test/r/rq_1', answers: { company_name: 'Acme' }, display: { company_name: 'Acme' }, timeline: [] }
 
   test('fetches the request with its answers and display', async () => {
     rpc('requests.get', (params) => params.requestId === 'req_1').reply(200, { ok: true, data: view })

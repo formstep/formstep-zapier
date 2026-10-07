@@ -24,7 +24,7 @@ class FakeFormbase {
     this.workspace = options.workspace || { id: 'ws_1', name: 'Acme' }
     this.forms = options.forms || [{ id: 'form_1', name: 'Customer Feedback', published: true }]
     this.fields = options.fields || {}
-    this.pdfUrl = options.pdfUrl || 'https://api.formbase.test/api/storage/pdf-key'
+    this.pdfUrl = options.pdfUrl || 'https://api.formstep.test/api/storage/pdf-key'
     this.subscriptions = new Map()
     this.requests = new Map()
     // Files a Zap maps into a file input, served at /files/<name>; documents reserved and uploaded.
@@ -258,7 +258,7 @@ class FakeFormbase {
       canceledBy: null,
       cancelReason: null,
       remindersSent: 0,
-      url: `https://forms.formbase.test/r/rq_${id}`,
+      url: `https://form.formstep.test/r/rq_${id}`,
       answers: null,
       display: null,
       idempotencyKey: params.idempotencyKey,

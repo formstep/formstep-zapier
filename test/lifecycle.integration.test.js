@@ -197,7 +197,7 @@ test('a Zap creates a request, watches it complete, finds it again and cancels a
   }
   const created = await createRequest.operation.perform(z, { authData, inputData })
   expect(created).toMatchObject({ id: 'req_1', status: 'pending', externalId: 'run-42', deduplicated: false })
-  expect(created.url).toMatch(/^https:\/\/forms\.formbase\.test\/r\//)
+  expect(created.url).toMatch(/^https:\/\/form\.formstep\.test\/r\//)
   expect(formbase.requests.get('req_1')).toMatchObject({
     prefill: { company_name: 'Acme', plan: 'pro', contacts: [{ name: 'Ada' }] },
     readonlyKeys: ['company_name'],

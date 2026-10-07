@@ -3,7 +3,7 @@
 // The pieces every sample event is built from, so the submission and request
 // samples cannot drift apart (docs/external-api.md § Events).
 
-const SAMPLE_PDF_URL = 'https://api.formbase.so/api/storage/00000000-0000-4000-8000-000000000000'
+const SAMPLE_PDF_URL = 'https://api.formstep.io/api/storage/00000000-0000-4000-8000-000000000000'
 
 function sampleEnvelope(type, data) {
   return {

@@ -1,6 +1,6 @@
 # formbase Zapier Integration
 
-Native Zapier marketplace app for [formbase](https://formbase.so). formbase collects and verifies information from customers for workflows and AI agents: a Zap or an agent creates a request, the customer completes a branded form without an account, and the verified answers come back keyed by field key. This app creates, finds, reminds and cancels requests from a Zap, and resumes Zaps when a request is completed, expires or is canceled, or when a form is submitted.
+Native Zapier marketplace app for [formbase](https://formstep.io). formbase collects and verifies information from customers for workflows and AI agents: a Zap or an agent creates a request, the customer completes a branded form without an account, and the verified answers come back keyed by field key. This app creates, finds, reminds and cancels requests from a Zap, and resumes Zaps when a request is completed, expires or is canceled, or when a form is submitted.
 
 ## What a Zap can do
 
@@ -42,7 +42,7 @@ and `package-lock.json`, as required by the Zapier CLI.
     refresh token; access 1h, refresh 30d).
   - `test` calls `me.get` (`{ id, email, name }`) so the label renders `{{email}}`.
   - Env vars: `CLIENT_ID`, `CLIENT_SECRET` (see setup below), optional `BASE_URL`
-    (default `https://api.formbase.so`).
+    (default `https://api.formstep.io`).
 - **Triggers** — six REST hooks built by one factory, `utils/hook_trigger.js`.
   Each picks a form, subscribes with one `webhooks.create` `eventType`,
   unsubscribes with `webhooks.delete`, and accepts exactly one event `type`; a
@@ -170,7 +170,7 @@ npx convex run internal/oauthClients:seedZapierOAuthClient \
 npx zapier-platform env:set 1.0.0 \
   CLIENT_ID=fboc_zapier \
   CLIENT_SECRET='pick_a_long_random_secret' \
-  BASE_URL=https://api.formbase.so
+  BASE_URL=https://api.formstep.io
 ```
 
 `client_id` defaults to `fboc_zapier` (override with a `clientId` arg). This is a
@@ -205,8 +205,8 @@ for Public review (~1–3 weeks).
 
 ## Reference
 
-- [Formbase API methods](https://docs.formbase.so/developers/rest-api)
-- [Formbase webhook reference](https://docs.formbase.so/developers/webhooks-reference)
+- [Formbase API methods](https://docs.formstep.io/developers/rest-api)
+- [Formbase webhook reference](https://docs.formstep.io/developers/webhooks-reference)
 
 ## File map
 

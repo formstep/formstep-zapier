@@ -1,5 +1,5 @@
 // BASE_URL is read at module load in utils/request, so set it before requiring.
-process.env.BASE_URL = 'https://fake.formbase.test'
+process.env.BASE_URL = 'https://fake.formstep.test'
 
 const { createHash } = require('crypto')
 const nock = require('nock')
@@ -66,7 +66,7 @@ function captureCreate() {
   rpc('requests.create', (params) => {
     captured.params = params
     return true
-  }).reply(200, { ok: true, data: { id: 'req_1', status: 'pending', url: 'https://forms.formbase.test/r/rq_1', deduplicated: false } })
+  }).reply(200, { ok: true, data: { id: 'req_1', status: 'pending', url: 'https://form.formstep.test/r/rq_1', deduplicated: false } })
   return captured
 }
 

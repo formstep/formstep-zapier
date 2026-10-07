@@ -1,5 +1,5 @@
 // BASE_URL is read at module load in utils/request, so set it before requiring.
-process.env.BASE_URL = 'https://fake.formbase.test'
+process.env.BASE_URL = 'https://fake.formstep.test'
 
 const nock = require('nock')
 const { formbaseRpc } = require('../utils/request')
@@ -22,7 +22,7 @@ describe('formbaseRpc', () => {
     expect(result).toEqual({ id: 'u1', email: 'a@b.com' })
   })
 
-  test('defaults to https://api.formbase.so when BASE_URL is unset', async () => {
+  test('defaults to https://api.formstep.io when BASE_URL is unset', async () => {
     const saved = process.env.BASE_URL
     delete process.env.BASE_URL
     let freshRpc
@@ -31,7 +31,7 @@ describe('formbaseRpc', () => {
     })
     process.env.BASE_URL = saved
 
-    nock('https://api.formbase.so').post('/api/v1').reply(200, { ok: true, data: { items: [] } })
+    nock('https://api.formstep.io').post('/api/v1').reply(200, { ok: true, data: { items: [] } })
 
     await expect(freshRpc({ z: makeZ(), bundle, method: 'forms.list' })).resolves.toEqual({ items: [] })
   })

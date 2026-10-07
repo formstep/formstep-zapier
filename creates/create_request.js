@@ -373,7 +373,7 @@ const create = {
     sample: {
       id: 'req_example000000000000',
       status: 'pending',
-      url: 'https://forms.formbase.so/r/rq_example',
+      url: 'https://form.formstep.io/r/rq_example',
       deliveryStatus: 'not_requested',
       expiresAt: '2026-06-25T12:00:00.000Z',
       createdAt: '2026-05-26T12:00:00.000Z',

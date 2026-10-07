@@ -56,7 +56,7 @@ const create = {
       outcome: 'approve',
       submissionId: 'sub_xyz789',
       completedAt: '2026-05-27T12:00:00.000Z',
-      url: 'https://forms.formbase.so/r/rq_example',
+      url: 'https://form.formstep.io/r/rq_example',
       answers: { case_id: 'CASE-9', company_name: 'Acme', decision: 'approve' },
       display: { case_id: 'CASE-9', company_name: 'Acme', decision: 'Approve' },
       timeline: [{ id: 'req_example000000000000:created', at: '2026-05-26T12:00:00.000Z', type: 'created' }],
