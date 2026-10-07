@@ -315,7 +315,7 @@ describe('downloadSubmissionPdf hydrator', () => {
   test('calls submissions.pdf and returns the proxy URL', async () => {
     rpc('submissions.pdf', (params) => params.formId === 'form_1' && params.submissionId === 'sub_1').reply(200, {
       ok: true,
-      data: { url: 'https://api.formstep.io/api/storage/pdf', filename: 'formbase-submission-sub_1.pdf', contentType: 'application/pdf', byteLength: 123 },
+      data: { url: 'https://api.formstep.io/api/storage/pdf', filename: 'formstep-submission-sub_1.pdf', contentType: 'application/pdf', byteLength: 123 },
     })
 
     const result = await hydrators.downloadSubmissionPdf(makeZ(), { authData, inputData: { formId: 'form_1', submissionId: 'sub_1' } })

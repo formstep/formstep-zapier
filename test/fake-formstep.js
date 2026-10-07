@@ -91,7 +91,7 @@ class FakeFormstep {
       case 'submissions.sample':
         return { data: this.buildEvent({ formId: params.formId, type: 'submission.completed', test: true }) }
       case 'submissions.pdf':
-        return { data: { url: this.pdfUrl, filename: `formbase-submission-${params.submissionId}.pdf`, contentType: 'application/pdf', byteLength: 123 } }
+        return { data: { url: this.pdfUrl, filename: `formstep-submission-${params.submissionId}.pdf`, contentType: 'application/pdf', byteLength: 123 } }
       case 'documents.create':
         return this.createDocument(params)
       case 'requests.create':
