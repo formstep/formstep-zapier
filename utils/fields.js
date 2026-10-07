@@ -1,8 +1,8 @@
 'use strict'
 
-const { formbaseRpc } = require('./request')
+const { formstepRpc } = require('./request')
 
-// The Zapier field type of a formbase field type, where it is not plain text.
+// The Zapier field type of a Formstep field type, where it is not plain text.
 // Output fields and Create Request inputs both read it.
 const ZAPIER_TYPE_BY_FIELD_TYPE = {
   number: 'number',
@@ -48,7 +48,7 @@ const OBJECT_ANSWER_PROPERTIES = {
  * still be wired up on the envelope alone; that comes back as an empty list.
  */
 async function listFields(z, bundle, formId) {
-  const { items } = await formbaseRpc({ z, bundle, method: 'fields.list', params: { formId } })
+  const { items } = await formstepRpc({ z, bundle, method: 'fields.list', params: { formId } })
   return items
 }
 

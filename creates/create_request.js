@@ -1,13 +1,13 @@
 'use strict'
 
-const { formbaseRpc } = require('../utils/request')
+const { formstepRpc } = require('../utils/request')
 const { withIsoTimes } = require('../utils/request_summary')
 const { listFields, ZAPIER_TYPE_BY_FIELD_TYPE } = require('../utils/fields')
 const { uploadDocuments } = require('../utils/documents')
 
 const DELIVERY_CHOICES = {
   none: 'None: the Zap sends the link itself',
-  email: 'Email: formbase sends the invitation',
+  email: 'Email: Formstep sends the invitation',
 }
 
 // Option-valued types whose answer is one option key …
@@ -17,7 +17,7 @@ const MULTI_CHOICE_TYPES = new Set(['checkbox', 'ranking', 'picture-choice'])
 
 /**
  * The Zapier input key for one field key. A field key may contain `.` and `-`
- * (formbase allows `[A-Za-z0-9_.-]`), which a Zapier key may not, so those
+ * (Formstep allows `[A-Za-z0-9_.-]`), which a Zapier key may not, so those
  * become `_`. The payload is rebuilt by walking `fields.list` again rather than
  * by decoding, so the encoding does not need to be reversible; it only needs
  * to be unique within one form, which inputKeys checks.
@@ -220,8 +220,8 @@ function buildFieldValues(items, inputData) {
 
 /**
  * The Documents block the files of this run go into: none named when the form
- * has one block, which formbase then picks, and the picked one when it has
- * several. Checked before any upload, so a run formbase would refuse leaves
+ * has one block, which Formstep then picks, and the picked one when it has
+ * several. Checked before any upload, so a run Formstep would refuse leaves
  * no document behind.
  */
 function documentsBlockFor(items, input) {
@@ -283,7 +283,7 @@ async function buildCreateParams(z, bundle) {
 
 async function perform(z, bundle) {
   const params = await buildCreateParams(z, bundle)
-  return withIsoTimes(await formbaseRpc({ z, bundle, method: 'requests.create', params }))
+  return withIsoTimes(await formstepRpc({ z, bundle, method: 'requests.create', params }))
 }
 
 const create = {

@@ -1,15 +1,15 @@
 {
-  "name": "formbase-zapier",
+  "name": "formstep-zapier",
   "version": "4.4.2",
-  "description": "Official formbase integration for Zapier — resume Zaps when a customer completes a request or submits a form.",
+  "description": "Official Formstep integration for Zapier — resume Zaps when a customer completes a request or submits a form.",
   "license": "MIT",
   "homepage": "https://formstep.io",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/formbaseso/formbase-zapier.git"
+    "url": "git+https://github.com/formstep/formstep-zapier.git"
   },
   "bugs": {
-    "url": "https://github.com/formbaseso/formbase-zapier/issues"
+    "url": "https://github.com/formstep/formstep-zapier/issues"
   },
   "main": "index.js",
   "private": true,

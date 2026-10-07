@@ -2,7 +2,7 @@
 
 const hydrators = require('../hydrators')
 
-// The envelope's own fields, shared by every event formbase sends
+// The envelope's own fields, shared by every event Formstep sends
 // (docs/external-api.md § Events).
 const EVENT_OUTPUT_FIELDS = [
   { key: 'id', label: 'Event ID', type: 'string' },
@@ -60,7 +60,7 @@ function addPdfFileHydrator(z, payload) {
   const formId = payload.data.form?.id
   const submissionId = payload.data.submission.id
   if (!formId || !submissionId) {
-    throw new Error('formbase event carries a submission PDF but no data.form.id / data.submission.id to hydrate it from.')
+    throw new Error('Formstep event carries a submission PDF but no data.form.id / data.submission.id to hydrate it from.')
   }
   return {
     ...payload,

@@ -8,7 +8,7 @@ module.exports = {
   noun: 'Form',
   display: {
     label: 'List Forms',
-    description: 'Internal: lists formbase forms for the form picker dropdown.',
+    description: 'Internal: lists Formstep forms for the form picker dropdown.',
     hidden: true,
   },
   operation: {

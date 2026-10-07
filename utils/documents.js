@@ -1,9 +1,9 @@
 'use strict'
 
 const { createHash } = require('crypto')
-const { formbaseRpc } = require('./request')
+const { formstepRpc } = require('./request')
 
-// The document types formbase accepts (docs/external-api.md § documents.create),
+// The document types Formstep accepts (docs/external-api.md § documents.create),
 // by file extension, for a file whose download names no usable type.
 const CONTENT_TYPE_BY_EXTENSION = {
   pdf: 'application/pdf',
@@ -69,10 +69,10 @@ function extensionOf(name) {
  * What one file input holds: its bytes, the name the recipient sees and its
  * type. Zapier hands a file input over as a URL (a stashed or hydrated file,
  * or a link the Zap mapped). The name comes from the download's
- * Content-Disposition, else the URL; the type from the bytes (formbase checks
+ * Content-Disposition, else the URL; the type from the bytes (Formstep checks
  * them too), else the response, else the name. A file whose type none of
  * them tell fails here,
- * before anything is reserved; a type formbase does not take is refused by
+ * before anything is reserved; a type Formstep does not take is refused by
  * `documents.create` with DOCUMENT_TYPE_NOT_ALLOWED.
  */
 async function downloadDocument(z, url, position) {
@@ -90,7 +90,7 @@ async function downloadDocument(z, url, position) {
   const declaredType = GENERIC_CONTENT_TYPES.has(headerType) ? CONTENT_TYPE_BY_EXTENSION[extensionOf(fileName)] : headerType
   const contentType = sniffContentType(bytes) || declaredType
   if (!contentType) {
-    throw new Error(`Document ${position} has no file type formbase can tell. Documents are PDFs or images.`)
+    throw new Error(`Document ${position} has no file type Formstep can tell. Documents are PDFs or images.`)
   }
   const extension = EXTENSION_BY_CONTENT_TYPE[contentType]
   const name = fileName || (extension ? `Document ${position}.${extension}` : `Document ${position}`)
@@ -100,11 +100,11 @@ async function downloadDocument(z, url, position) {
 /**
  * Reserves one document with `documents.create` and puts its bytes at the
  * presigned URL it answers with. `requests.create` later checks the object
- * against the declared size and sha256. The PUT carries no formbase token:
+ * against the declared size and sha256. The PUT carries no Formstep token:
  * the URL is its own credential.
  */
 async function uploadDocument(z, bundle, formId, { bytes, name, contentType }) {
-  const reserved = await formbaseRpc({
+  const reserved = await formstepRpc({
     z,
     bundle,
     method: 'documents.create',
@@ -118,7 +118,7 @@ async function uploadDocument(z, bundle, formId, { bytes, name, contentType }) {
     skipThrowForStatus: true,
   })
   if (response.status < 200 || response.status >= 300) {
-    throw new Error(`Uploading "${name}" to formbase failed (HTTP ${response.status}).`)
+    throw new Error(`Uploading "${name}" to Formstep failed (HTTP ${response.status}).`)
   }
   return reserved.id
 }
@@ -126,7 +126,7 @@ async function uploadDocument(z, bundle, formId, { bytes, name, contentType }) {
 /**
  * The `documents` entries of `requests.create` for the files of one run, each
  * downloaded and uploaded in parallel. `field` names the Documents block when
- * the form has several; with one, formbase picks it.
+ * the form has several; with one, Formstep picks it.
  */
 async function uploadDocuments(z, bundle, formId, files, field) {
   const documentIds = await Promise.all(

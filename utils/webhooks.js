@@ -1,7 +1,7 @@
 'use strict'
 
 const { createHmac, randomBytes, timingSafeEqual } = require('crypto')
-const { formbaseRpc } = require('./request')
+const { formstepRpc } = require('./request')
 
 const SIGNATURE_HEADER_PATTERN = /^t=(\d+),sha256=([a-f0-9]{64})$/
 const SIGNATURE_MAX_AGE_SECONDS = 5 * 60
@@ -17,7 +17,7 @@ const SIGNATURE_MAX_AGE_SECONDS = 5 * 60
  */
 async function subscribe(z, bundle, params) {
   const signingSecret = createWebhookSigningSecret()
-  const data = await formbaseRpc({
+  const data = await formstepRpc({
     z,
     bundle,
     method: 'webhooks.create',
@@ -27,7 +27,7 @@ async function subscribe(z, bundle, params) {
 }
 
 async function unsubscribe(z, bundle) {
-  return formbaseRpc({ z, bundle, method: 'webhooks.delete', params: { subscriptionId: bundle.subscribeData.id } })
+  return formstepRpc({ z, bundle, method: 'webhooks.delete', params: { subscriptionId: bundle.subscribeData.id } })
 }
 
 /** Throws unless the delivery is signed with this subscription's secret and is fresh. */

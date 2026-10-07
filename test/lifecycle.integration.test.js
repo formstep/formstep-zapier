@@ -1,11 +1,11 @@
 /**
- * The whole app against a formbase API speaking real HTTP: pick a form,
+ * The whole app against a Formstep API speaking real HTTP: pick a form,
  * label its outputs, subscribe, receive a signed delivery, hydrate the PDF,
  * unsubscribe; then create, find, remind, cancel and watch a request, and
  * attach documents to one.
  * Nothing is mocked below `z.request`.
  */
-const { FakeFormbase, ACCESS_TOKEN } = require('./fake-formstep')
+const { FakeFormstep, ACCESS_TOKEN } = require('./fake-formstep')
 const { makeZ } = require('./helpers')
 
 const FIELDS = [
@@ -14,7 +14,7 @@ const FIELDS = [
   { key: 'contacts', type: 'group', repeating: true, members: [{ key: 'name', type: 'text', title: 'Name', required: true, prefillable: true }] },
 ]
 
-let formbase
+let formstep
 let trigger
 let updatedTrigger
 let abandonedTrigger
@@ -31,7 +31,7 @@ const z = makeZ()
 const authData = { access_token: ACCESS_TOKEN }
 
 beforeAll(async () => {
-  formbase = await new FakeFormbase({
+  formstep = await new FakeFormstep({
     forms: [
       { id: 'form_live', name: 'Vendor onboarding', published: true },
       { id: 'form_draft', name: 'Draft', published: false },
@@ -52,7 +52,7 @@ beforeAll(async () => {
     },
   }).start()
   // utils/request reads BASE_URL at load, so the app is required after the server is up.
-  process.env.BASE_URL = formbase.baseUrl
+  process.env.BASE_URL = formstep.baseUrl
   jest.isolateModules(() => {
     trigger = require('../triggers/public_link_submission_created')
     updatedTrigger = require('../triggers/public_link_submission_updated')
@@ -69,7 +69,7 @@ beforeAll(async () => {
   })
 })
 
-afterAll(() => formbase.stop())
+afterAll(() => formstep.stop())
 
 test('a Zap goes from form picker to delivered submission and back to unsubscribed', async () => {
   // 1. The form picker lists the workspace's forms.
@@ -96,21 +96,21 @@ test('a Zap goes from form picker to delivered submission and back to unsubscrib
     targetUrl: 'https://hooks.zapier.com/hooks/standard/1',
     inputData: { formId: 'form_live' },
   })
-  expect(formbase.subscriptions.get(subscribeData.id)).toMatchObject({
+  expect(formstep.subscriptions.get(subscribeData.id)).toMatchObject({
     provider: 'zapier',
     eventType: 'submission_created',
     signingSecret: subscribeData.signingSecret,
   })
 
-  // 5. formbase delivers a submission; the Zap verifies it and hydrates the PDF lazily.
-  const event = formbase.buildEvent({
+  // 5. Formstep delivers a submission; the Zap verifies it and hydrates the PDF lazily.
+  const event = formstep.buildEvent({
     formId: 'form_live',
     answers: { company_name: 'Acme', plan: 'pro', contacts: [{ name: 'Ada' }] },
     display: { company_name: 'Acme', plan: 'Pro', contacts: 'Ada' },
-    pdfUrl: formbase.pdfUrl,
+    pdfUrl: formstep.pdfUrl,
     request: { id: 'req_1', externalId: 'run-42' },
   })
-  const delivery = formbase.deliver(subscribeData.id, event)
+  const delivery = formstep.deliver(subscribeData.id, event)
   const [item] = await trigger.operation.perform(z, {
     authData,
     subscribeData,
@@ -122,7 +122,7 @@ test('a Zap goes from form picker to delivered submission and back to unsubscrib
   expect(item.data.request).toEqual({ id: 'req_1', externalId: 'run-42' })
   expect(item.data.submission.pdfFile).toBe('hydrate-file:form_live:sub_1')
 
-  await expect(hydrators.downloadSubmissionPdf(z, { authData, inputData: { formId: 'form_live', submissionId: 'sub_1' } })).resolves.toBe(formbase.pdfUrl)
+  await expect(hydrators.downloadSubmissionPdf(z, { authData, inputData: { formId: 'form_live', submissionId: 'sub_1' } })).resolves.toBe(formstep.pdfUrl)
 
   // 6. A delivery signed with another secret never reaches the Zap.
   const forged = { ...delivery, headers: { ...delivery.headers, 'x-formstep-signature': delivery.headers['x-formstep-signature'].replace(/sha256=.*/, `sha256=${'0'.repeat(64)}`) } }
@@ -132,7 +132,7 @@ test('a Zap goes from form picker to delivered submission and back to unsubscrib
 
   // 7. Turning the Zap off removes the subscription.
   await trigger.operation.performUnsubscribe(z, { authData, subscribeData })
-  expect(formbase.subscriptions.size).toBe(0)
+  expect(formstep.subscriptions.size).toBe(0)
 })
 
 test('an abandoned-submission Zap registers its idle window and tests against submission.abandoned', async () => {
@@ -141,7 +141,7 @@ test('an abandoned-submission Zap registers its idle window and tests against su
     targetUrl: 'https://hooks.zapier.com/hooks/standard/2',
     inputData: { formId: 'form_live', idleWindow: '3d' },
   })
-  expect(formbase.subscriptions.get(subscribeData.id)).toMatchObject({ eventType: 'submission_abandoned', idleWindow: '3d' })
+  expect(formstep.subscriptions.get(subscribeData.id)).toMatchObject({ eventType: 'submission_abandoned', idleWindow: '3d' })
 
   const [sample] = await abandonedTrigger.operation.performList(z, { authData, inputData: { formId: 'form_live' } })
   expect(sample.type).toBe('submission.abandoned')
@@ -155,7 +155,7 @@ test('an updated-submission Zap registers without an idle window and tests again
     targetUrl: 'https://hooks.zapier.com/hooks/standard/3',
     inputData: { formId: 'form_live' },
   })
-  const subscription = formbase.subscriptions.get(subscribeData.id)
+  const subscription = formstep.subscriptions.get(subscribeData.id)
   expect(subscription).toMatchObject({ eventType: 'submission_updated' })
   expect(subscription).not.toHaveProperty('idleWindow')
 
@@ -198,7 +198,7 @@ test('a Zap creates a request, watches it complete, finds it again and cancels a
   const created = await createRequest.operation.perform(z, { authData, inputData })
   expect(created).toMatchObject({ id: 'req_1', status: 'pending', externalId: 'run-42', deduplicated: false })
   expect(created.url).toMatch(/^https:\/\/form\.formstep\.test\/r\//)
-  expect(formbase.requests.get('req_1')).toMatchObject({
+  expect(formstep.requests.get('req_1')).toMatchObject({
     prefill: { company_name: 'Acme', plan: 'pro', contacts: [{ name: 'Ada' }] },
     readonlyKeys: ['company_name'],
     recipient: { email: 'ada@example.com', name: 'Ada' },
@@ -225,18 +225,18 @@ test('a Zap creates a request, watches it complete, finds it again and cancels a
     targetUrl: 'https://hooks.zapier.com/hooks/standard/3',
     inputData: { formId: 'form_live' },
   })
-  expect(formbase.subscriptions.get(subscribeData.id)).toMatchObject({ provider: 'zapier', eventType: 'request_completed' })
+  expect(formstep.subscriptions.get(subscribeData.id)).toMatchObject({ provider: 'zapier', eventType: 'request_completed' })
 
   // 6. The recipient completes the request; the signed delivery becomes the Zap item, PDF included.
-  const completed = formbase.buildRequestEvent({
+  const completed = formstep.buildRequestEvent({
     formId: 'form_live',
     status: 'completed',
     request: { id: 'req_1', metadata: { runId: 'run-42' } },
     answers: { company_name: 'Acme', plan: 'pro', contacts: [{ name: 'Ada' }] },
     display: { company_name: 'Acme', plan: 'Pro', contacts: 'Ada' },
-    pdfUrl: formbase.pdfUrl,
+    pdfUrl: formstep.pdfUrl,
   })
-  const delivery = formbase.deliver(subscribeData.id, completed)
+  const delivery = formstep.deliver(subscribeData.id, completed)
   const [item] = await requestCompleted.operation.perform(z, {
     authData,
     subscribeData,
@@ -248,7 +248,7 @@ test('a Zap creates a request, watches it complete, finds it again and cancels a
   expect(item.data.submission.pdfFile).toBe('hydrate-file:form_live:sub_1')
 
   // 7. A canceled event on the completed subscription is refused even though it is signed.
-  const wrongType = formbase.deliver(subscribeData.id, formbase.buildRequestEvent({ formId: 'form_live', status: 'canceled' }))
+  const wrongType = formstep.deliver(subscribeData.id, formstep.buildRequestEvent({ formId: 'form_live', status: 'canceled' }))
   await expect(
     requestCompleted.operation.perform(z, { authData, subscribeData, cleanedRequest: JSON.parse(wrongType.content), rawRequest: { headers: wrongType.headers, content: wrongType.content } })
   ).rejects.toThrow(/request\.canceled event to a request\.completed subscription/)
@@ -265,7 +265,7 @@ test('a Zap creates a request, watches it complete, finds it again and cancels a
   await expect(remindRequest.operation.perform(z, { authData, inputData: { requestId: second.id } })).rejects.toMatchObject({ code: 'CONFLICT' })
 
   const canceledSubscription = await requestCanceled.operation.performSubscribe(z, { authData, targetUrl: 'https://hooks.zapier.com/hooks/standard/4', inputData: { formId: 'form_live' } })
-  const canceledDelivery = formbase.deliver(canceledSubscription.id, formbase.buildRequestEvent({ formId: 'form_live', status: 'canceled', request: { id: second.id, externalId: 'run-43' } }))
+  const canceledDelivery = formstep.deliver(canceledSubscription.id, formstep.buildRequestEvent({ formId: 'form_live', status: 'canceled', request: { id: second.id, externalId: 'run-43' } }))
   const [canceledItem] = await requestCanceled.operation.perform(z, {
     authData,
     subscribeData: canceledSubscription,
@@ -274,7 +274,7 @@ test('a Zap creates a request, watches it complete, finds it again and cancels a
   })
   expect(canceledItem.data).toEqual({ request: expect.objectContaining({ id: second.id, status: 'canceled', cancelReason: 'Order withdrawn' }) })
   await requestCanceled.operation.performUnsubscribe(z, { authData, subscribeData: canceledSubscription })
-  expect(formbase.subscriptions.size).toBe(0)
+  expect(formstep.subscriptions.size).toBe(0)
 })
 
 test('a request on an unpublished form is refused with the form-not-published reason', async () => {
@@ -287,12 +287,12 @@ test('a Zap attaches a document: the form offers the input, the file lands in st
 
   const created = await createRequest.operation.perform(z, {
     authData,
-    inputData: { formId: 'form_lease', prefill__tenant_name: 'Ada', documents: [`${formbase.baseUrl}/files/lease.pdf`] },
+    inputData: { formId: 'form_lease', prefill__tenant_name: 'Ada', documents: [`${formstep.baseUrl}/files/lease.pdf`] },
   })
 
   expect(created).toMatchObject({ status: 'pending', deduplicated: false })
-  const lease = formbase.files['lease.pdf'].bytes
-  expect(formbase.requests.get(created.id).documents).toEqual([{ name: 'Lease contract.pdf', size: lease.length, contentType: 'application/pdf' }])
-  const [document] = formbase.documents.values()
+  const lease = formstep.files['lease.pdf'].bytes
+  expect(formstep.requests.get(created.id).documents).toEqual([{ name: 'Lease contract.pdf', size: lease.length, contentType: 'application/pdf' }])
+  const [document] = formstep.documents.values()
   expect(document.uploaded.bytes.equals(lease)).toBe(true)
 })

@@ -1,6 +1,6 @@
-# formbase Zapier Integration
+# Formstep Zapier Integration
 
-Native Zapier marketplace app for [formbase](https://formstep.io). formbase collects and verifies information from customers for workflows and AI agents: a Zap or an agent creates a request, the customer completes a branded form without an account, and the verified answers come back keyed by field key. This app creates, finds, reminds and cancels requests from a Zap, and resumes Zaps when a request is completed, expires or is canceled, or when a form is submitted.
+Native Zapier marketplace app for [Formstep](https://formstep.io). Formstep collects and verifies information from customers for workflows and AI agents: a Zap or an agent creates a request, the customer completes a branded form without an account, and the verified answers come back keyed by field key. This app creates, finds, reminds and cancels requests from a Zap, and resumes Zaps when a request is completed, expires or is canceled, or when a form is submitted.
 
 ## What a Zap can do
 
@@ -27,7 +27,7 @@ Things that make a Zap easier to build:
 - Every trigger and Get Request label their answer outputs with the form's question titles once a form is picked. A booking and a payment answer map property by property (start time, amount, …).
 - **External ID** on Create Request is also the idempotency key: a replayed Zap run gets the same request back (`deduplicated: true`) instead of sending the recipient a second link.
 
-formbase posts every event once, to one trigger: a completed request fires **Request Completed** alone, never Public Link Submission Created. A Zap that wants every answer, whichever channel produced it, is one Zap on each trigger.
+Formstep posts every event once, to one trigger: a completed request fires **Request Completed** alone, never Public Link Submission Created. A Zap that wants every answer, whichever channel produced it, is one Zap on each trigger.
 
 ## How it works
 
@@ -60,7 +60,7 @@ and `package-lock.json`, as required by the Zapier CLI.
   | `public_link_submission_updated`   | `submission_updated`   | `submission.updated`   | `submissions.sample`, relabeled |
   | `public_link_submission_abandoned` | `submission_abandoned` | `submission.abandoned` | `submissions.sample`, relabeled |
 
-  - Every event is the formbase envelope `{ id, type, createdAt, apiVersion,
+  - Every event is the Formstep envelope `{ id, type, createdAt, apiVersion,
     test, data }`. `data.answers` holds each answer once under its field key,
     `data.display` the readable text under the same key, and `data.submission`
     the email, timestamps, edit count, PDF link and language. A request event
@@ -95,12 +95,12 @@ and `package-lock.json`, as required by the Zapier CLI.
   and `requests.create` references the ids in the order the files were given.
   The name comes from the download's `Content-Disposition`, else the URL,
   else `Document N.<ext>`; the type from the file's first bytes, else the
-  response, else the name. The PUT carries no formbase token: the presigned
+  response, else the name. The PUT carries no Formstep token: the presigned
   URL is its own credential.
-  - A replayed Zap uploads its files again under new document ids. formbase
+  - A replayed Zap uploads its files again under new document ids. Formstep
     counts a document by its bytes, block and name for the idempotency check,
     so the replay with the same External ID still gets the original request
-    back. That needs a formbase backend with that rule (formbase commit
+    back. That needs a Formstep backend with that rule (Formstep commit
     "let a retry that uploads the same document again deduplicate"); an older
     one refuses the replay with `IDEMPOTENCY_CONFLICT`.
 - **Get, Remind, Cancel** (`creates/`) and **Find Request**
@@ -111,7 +111,7 @@ and `package-lock.json`, as required by the Zapier CLI.
 - **Dropdowns** (`utils/dropdowns.js`) — hidden triggers `form_list`
   (`form_list.id.label`, every page of `forms.list`) and `request_list`
   (`request_list.id.label`, `requests.list` one page per dropdown page, the
-  formbase cursor kept in `z.cursor`). An OAuth token is scoped to one
+  Formstep cursor kept in `z.cursor`). An OAuth token is scoped to one
   workspace, so both list that workspace.
 - **JSON-RPC client** (`utils/request.js`) — POSTs to `${BASE_URL}/api/v1` with
   `Authorization: Bearer <access_token>` and unwraps the `{ ok, data, error }`
@@ -157,7 +157,7 @@ The `redirectUris` must exactly match the Zapier callback shown in the dashboard
 
 ```bash
 # Run against BOTH prod and dev (same secret) so the Zap works in both.
-# 1. Set the secret on the formbase deployment (add --prod for production).
+# 1. Set the secret on the Formstep deployment (add --prod for production).
 npx convex env set ZAPIER_OAUTH_CLIENT_SECRET 'pick_a_long_random_secret'
 
 # 2. Seed the client — idempotent; re-run to update redirectUris / rotate secret.
@@ -180,19 +180,19 @@ with them — the server authenticates each client by its stored auth method.
 ## Develop, validate, publish
 
 ```bash
-cd formbase-zapier
+cd formstep-zapier
 npm install
-npm test                          # jest: unit tests (nock) + a lifecycle test against an in-process formbase API
+npm test                          # jest: unit tests (nock) + a lifecycle test against an in-process Formstep API
 npm run validate                  # Zapier's structural schema check, offline (CI runs it too)
 
 npx zapier-platform login --sso         # one-time
-npx zapier-platform register "formbase"   # one-time; creates .zapierapprc
+npx zapier-platform register "Formstep"   # one-time; creates .zapierapprc
 npx zapier-platform validate            # adds Zapier's online style checks
 npx zapier-platform push
 npx zapier-platform promote 1.0.0
 ```
 
-After pushing this change, turn every existing formbase Zap off and back on (or
+After pushing this change, turn every existing Formstep Zap off and back on (or
 recreate its trigger). This registers a new subscription containing the required
 idle window and signing secret. Old subscriptions are intentionally unsupported.
 
@@ -205,13 +205,13 @@ for Public review (~1–3 weeks).
 
 ## Reference
 
-- [Formbase API methods](https://docs.formstep.io/developers/rest-api)
-- [Formbase webhook reference](https://docs.formstep.io/developers/webhooks-reference)
+- [Formstep API methods](https://docs.formstep.io/developers/rest-api)
+- [Formstep webhook reference](https://docs.formstep.io/developers/webhooks-reference)
 
 ## File map
 
 ```
-formbase-zapier/
+formstep-zapier/
 ├── authentication.js        # OAuth 2.0 (auth code + PKCE)
 ├── hydrators.js             # lazy PDF File download via submissions.pdf
 ├── index.js                 # app export
@@ -241,7 +241,7 @@ formbase-zapier/
 │   └── request.js           # JSON-RPC transport + error mapping
 └── test/
     ├── helpers.js           # z stand-in, signed-delivery bundle
-    ├── fake-formstep.js     # in-process formbase API for the lifecycle test
+    ├── fake-formstep.js     # in-process Formstep API for the lifecycle test
     ├── *.test.js            # unit tests (nock)
     └── lifecycle.integration.test.js
 ```

@@ -52,7 +52,7 @@ function fieldsList(items = FIELDS) {
   return rpc('fields.list', (params) => params.formId === 'form_1').reply(200, { ok: true, data: { published: true, hasMore: false, items } })
 }
 
-/** Runs perform against a fake formbase and returns the requests.create params it sent. */
+/** Runs perform against a fake Formstep and returns the requests.create params it sent. */
 async function createParamsFor(inputData) {
   fieldsList()
   let sent
@@ -195,7 +195,7 @@ describe('perform (requests.create)', () => {
     await expect(create.operation.perform(makeZ(), { authData, inputData: { formId: 'form_1', expiresAt: 'someday' } })).rejects.toThrow(/Expires At/)
   })
 
-  test('surfaces a formbase validation error with its code', async () => {
+  test('surfaces a Formstep validation error with its code', async () => {
     fieldsList()
     rpc('requests.create').reply(400, { ok: false, error: { code: 'VALIDATION_ERROR', message: 'INVALID_PREFILL_VALUE: plan expects an option key' } })
     await expect(create.operation.perform(makeZ(), { authData, inputData: { formId: 'form_1', prefill__plan: 'Pro' } })).rejects.toMatchObject({ code: 'VALIDATION_ERROR' })

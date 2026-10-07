@@ -19,7 +19,7 @@ const remindRequest = require('./creates/remind_request')
 const getRequest = require('./creates/get_request')
 const findRequest = require('./searches/find_request')
 
-// Every formbase call goes through utils/request, which sets the Bearer header
+// Every Formstep call goes through utils/request, which sets the Bearer header
 // itself. No beforeRequest middleware: one would also run on the OAuth token
 // and refresh requests, where a stale access token has no business being sent.
 module.exports = {

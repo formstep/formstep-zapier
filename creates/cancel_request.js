@@ -1,12 +1,12 @@
 'use strict'
 
-const { formbaseRpc } = require('../utils/request')
+const { formstepRpc } = require('../utils/request')
 const { REQUEST_SUMMARY_OUTPUT_FIELDS, SAMPLE_REQUEST_SUMMARY, REQUEST_ID_INPUT_FIELD, withIsoTimes } = require('../utils/request_summary')
 
 async function perform(z, bundle) {
   const { requestId, reason } = bundle.inputData
   return withIsoTimes(
-    await formbaseRpc({
+    await formstepRpc({
       z,
       bundle,
       method: 'requests.cancel',

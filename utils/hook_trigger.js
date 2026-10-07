@@ -5,7 +5,7 @@ const { listFields, answerOutputFields } = require('./fields')
 const { addPdfFileHydrator } = require('./events')
 
 /**
- * A REST hook trigger for one formbase subscription event. Every formbase
+ * A REST hook trigger for one Formstep subscription event. Every Formstep
  * trigger is the same machine: pick a form, subscribe with one `eventType`,
  * receive exactly one event `type`, verify its signature, and offer the
  * envelope (plus, for an event with answers, one output per field key) as
@@ -55,7 +55,7 @@ function createHookTrigger({
     requireVerifiedDelivery(bundle)
     const event = bundle.cleanedRequest
     if (event.type !== payloadType) {
-      throw new Error(`formbase delivered a ${event.type} event to a ${payloadType} subscription.`)
+      throw new Error(`Formstep delivered a ${event.type} event to a ${payloadType} subscription.`)
     }
     return [addPdfFileHydrator(z, event)]
   }

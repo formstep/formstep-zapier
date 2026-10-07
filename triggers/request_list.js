@@ -8,7 +8,7 @@ module.exports = {
   noun: 'Request',
   display: {
     label: 'List Requests',
-    description: 'Internal: lists the newest formbase requests for the request picker dropdown.',
+    description: 'Internal: lists the newest Formstep requests for the request picker dropdown.',
     hidden: true,
   },
   operation: {

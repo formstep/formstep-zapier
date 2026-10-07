@@ -13,13 +13,13 @@ const DOCUMENT_TYPES = ['application/pdf', 'image/png', 'image/jpeg', 'image/web
 const DOCUMENT_MAX_BYTES = 25 * 1024 * 1024
 
 /**
- * An in-process formbase external API: enough of `POST /api/v1` for a connector
+ * An in-process Formstep external API: enough of `POST /api/v1` for a connector
  * to run its whole lifecycle against real HTTP. It validates like the server
  * (bearer token, webhooks.create rules, requests.create idempotency), stores
  * subscriptions and requests, and signs deliveries with the secret each
  * subscription registered.
  */
-class FakeFormbase {
+class FakeFormstep {
   constructor(options = {}) {
     this.workspace = options.workspace || { id: 'ws_1', name: 'Acme' }
     this.forms = options.forms || [{ id: 'form_1', name: 'Customer Feedback', published: true }]
@@ -343,7 +343,7 @@ class FakeFormbase {
     return { ...envelope, data: { request: requestBlock, ...submissionEvent.data } }
   }
 
-  /** What formbase POSTs to a subscription's target URL: the signed raw body and its headers. */
+  /** What Formstep POSTs to a subscription's target URL: the signed raw body and its headers. */
   deliver(subscriptionId, event, options = {}) {
     const subscription = this.subscriptions.get(subscriptionId)
     if (!subscription) throw new Error(`No subscription ${subscriptionId}`)
@@ -379,4 +379,4 @@ function conflict(reason) {
   return { status: 409, error: { code: 'CONFLICT', message: reason, details: { reason } } }
 }
 
-module.exports = { FakeFormbase, ACCESS_TOKEN }
+module.exports = { FakeFormstep, ACCESS_TOKEN }

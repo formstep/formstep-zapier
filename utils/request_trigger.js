@@ -1,6 +1,6 @@
 'use strict'
 
-const { formbaseRpc } = require('./request')
+const { formstepRpc } = require('./request')
 const { createHookTrigger } = require('./hook_trigger')
 const { EVENT_OUTPUT_FIELDS, SUBMISSION_OUTPUT_FIELDS, REQUEST_OUTPUT_FIELDS } = require('./events')
 const { sampleEnvelope, sampleSubmission, sampleBookingAndPayment } = require('./samples')
@@ -65,7 +65,7 @@ function createRequestTrigger({ outcome, label, description, helpText }) {
     carriesAnswers: isCompleted,
     sample: SAMPLES[outcome],
     performList: (z, bundle) =>
-      formbaseRpc({ z, bundle, method: 'requests.sample', params: { formId: bundle.inputData.formId, eventType } }),
+      formstepRpc({ z, bundle, method: 'requests.sample', params: { formId: bundle.inputData.formId, eventType } }),
   })
 }
 

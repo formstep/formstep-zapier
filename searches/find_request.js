@@ -1,6 +1,6 @@
 'use strict'
 
-const { formbaseRpc } = require('../utils/request')
+const { formstepRpc } = require('../utils/request')
 const { getWorkspace } = require('../utils/dropdowns')
 const { REQUEST_SUMMARY_OUTPUT_FIELDS, SAMPLE_REQUEST_SUMMARY, withIsoTimes } = require('../utils/request_summary')
 
@@ -12,7 +12,7 @@ const { REQUEST_SUMMARY_OUTPUT_FIELDS, SAMPLE_REQUEST_SUMMARY, withIsoTimes } = 
 async function perform(z, bundle) {
   const { formId, externalId, includeTest } = bundle.inputData
   const scope = formId ? { formId } : { workspaceId: (await getWorkspace(z, bundle)).id }
-  const { items } = await formbaseRpc({
+  const { items } = await formstepRpc({
     z,
     bundle,
     method: 'requests.list',

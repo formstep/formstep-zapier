@@ -152,7 +152,7 @@ describe('outputFields', () => {
     expect(fields.some((field) => field.key.startsWith('data__answers__'))).toBe(false)
   })
 
-  test('surfaces a formbase failure instead of hiding the answer fields', async () => {
+  test('surfaces a Formstep failure instead of hiding the answer fields', async () => {
     rpc('fields.list').reply(404, { ok: false, error: { code: 'NOT_FOUND', message: 'Form not found' } })
 
     await expect(outputFields({ formId: 'form_gone' })).rejects.toMatchObject({ code: 'NOT_FOUND' })
@@ -263,7 +263,7 @@ describe('perform (a delivery)', () => {
   test('rejects a delivery of another event type instead of running the wrong Zap', async () => {
     const event = { ...completed(), type: 'submission.updated' }
     await expect(trigger.operation.perform(makeZ(), makeSignedWebhookBundle(event))).rejects.toThrow(
-      'formbase delivered a submission.updated event to a submission.completed subscription.'
+      'Formstep delivered a submission.updated event to a submission.completed subscription.'
     )
   })
 

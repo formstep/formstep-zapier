@@ -1,6 +1,6 @@
 'use strict'
 
-const { formbaseRpc } = require('./request')
+const { formstepRpc } = require('./request')
 
 const FORMS_PAGE_SIZE = 100
 const REQUESTS_PAGE_SIZE = 25
@@ -8,13 +8,13 @@ const REQUESTS_PAGE_SIZE = 25
 /**
  * The one workspace this connection is scoped to.
  *
- * A formbase OAuth token is scoped to the one workspace the user picked on the
+ * A Formstep OAuth token is scoped to the one workspace the user picked on the
  * consent screen, so `workspaces.list` answers with exactly that workspace.
  */
 async function getWorkspace(z, bundle) {
-  const { items: workspaces } = await formbaseRpc({ z, bundle, method: 'workspaces.list' })
+  const { items: workspaces } = await formstepRpc({ z, bundle, method: 'workspaces.list' })
   const workspace = workspaces[0]
-  if (!workspace) throw new Error('This formbase connection has no workspace. Reconnect and pick one.')
+  if (!workspace) throw new Error('This Formstep connection has no workspace. Reconnect and pick one.')
   return workspace
 }
 
@@ -30,7 +30,7 @@ async function listForms(z, bundle) {
   const forms = []
   let cursor
   do {
-    const page = await formbaseRpc({
+    const page = await formstepRpc({
       z,
       bundle,
       method: 'forms.list',
@@ -52,7 +52,7 @@ function requestLabel(request) {
  * The newest requests, one page per dropdown page, for the
  * `request_list.id.label` dynamic dropdown. Scoped to the action's form when it
  * has one picked, otherwise to the workspace. Zapier asks for the next page
- * with `bundle.meta.page`, and the formbase cursor rides along in `z.cursor`;
+ * with `bundle.meta.page`, and the Formstep cursor rides along in `z.cursor`;
  * an empty cursor means the previous page was the last.
  */
 async function listRequests(z, bundle) {
@@ -64,7 +64,7 @@ async function listRequests(z, bundle) {
 
   const { formId } = bundle.inputData
   const scope = formId ? { formId } : { workspaceId: (await getWorkspace(z, bundle)).id }
-  const page = await formbaseRpc({
+  const page = await formstepRpc({
     z,
     bundle,
     method: 'requests.list',

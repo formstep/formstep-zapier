@@ -126,7 +126,7 @@ describe('Create Request with documents', () => {
     for (const [id, params] of Object.entries(reserved)) {
       expect(uploaded[id].contentType).toBe(params.contentType)
       expect(sha256(uploaded[id].bytes)).toBe(params.sha256)
-      // The presigned URL is its own credential; the formbase token stays home.
+      // The presigned URL is its own credential; the Formstep token stays home.
       expect(uploaded[id].authorization).toBeUndefined()
     }
     expect(captured.params.documents).toEqual([{ documentId: expect.stringMatching(/^doc_/) }, { documentId: expect.stringMatching(/^doc_/) }])
@@ -195,7 +195,7 @@ describe('Create Request with documents', () => {
     fieldsList(ONE_BLOCK)
     nock(FILES).get('/blob').reply(200, Buffer.from('plain bytes'), { 'content-type': 'application/octet-stream' })
 
-    await expect(perform({ documents: [`${FILES}/blob`] })).rejects.toThrow(/no file type formbase can tell/)
+    await expect(perform({ documents: [`${FILES}/blob`] })).rejects.toThrow(/no file type Formstep can tell/)
   })
 
   test('surfaces a failed upload with the file name', async () => {
@@ -204,6 +204,6 @@ describe('Create Request with documents', () => {
     rpc('documents.create').reply(200, { ok: true, data: { id: 'doc_1', uploadUrl: `${STORAGE}/upload/doc_1` } })
     nock(STORAGE).put('/upload/doc_1').reply(403, 'Signature expired')
 
-    await expect(perform({ documents: [`${FILES}/contract.pdf`] })).rejects.toThrow('Uploading "contract.pdf" to formbase failed (HTTP 403).')
+    await expect(perform({ documents: [`${FILES}/contract.pdf`] })).rejects.toThrow('Uploading "contract.pdf" to Formstep failed (HTTP 403).')
   })
 })

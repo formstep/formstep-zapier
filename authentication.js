@@ -1,6 +1,6 @@
 'use strict'
 
-const { formbaseRpc, BASE_URL } = require('./utils/request')
+const { formstepRpc, BASE_URL } = require('./utils/request')
 
 // Scopes requested at authorize time. `api:read`/`api:write` grant access to
 // the /api/v1 surface this integration uses; `offline_access` is required for
@@ -11,13 +11,13 @@ const SCOPE = 'api:read api:write offline_access'
 async function test(z, bundle) {
   // me.get returns { id, email, name }; the returned object is what
   // connectionLabel "{{email}}" interpolates against.
-  return formbaseRpc({ z, bundle, method: 'me.get', params: {} })
+  return formstepRpc({ z, bundle, method: 'me.get', params: {} })
 }
 
 const authentication = {
   type: 'oauth2',
   oauth2Config: {
-    // PKCE (S256) is mandatory: formbase's /oauth/authorize rejects requests
+    // PKCE (S256) is mandatory: Formstep's /oauth/authorize rejects requests
     // without code_challenge. enablePkce makes Zapier append code_challenge /
     // code_challenge_method here and code_verifier at token exchange.
     enablePkce: true,

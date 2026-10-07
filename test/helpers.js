@@ -73,7 +73,7 @@ function signEvent(secret, timestampSeconds, rawBody) {
   return `t=${timestampSeconds},sha256=${digest}`
 }
 
-/** The bundle Zapier hands `perform` for one signed formbase delivery. */
+/** The bundle Zapier hands `perform` for one signed Formstep delivery. */
 function makeSignedWebhookBundle(event, options = {}) {
   const signingSecret = options.signingSecret || `whsec_${'a'.repeat(64)}`
   const timestamp = options.timestamp || Math.floor(Date.now() / 1000)

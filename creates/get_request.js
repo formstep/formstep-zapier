@@ -1,6 +1,6 @@
 'use strict'
 
-const { formbaseRpc } = require('../utils/request')
+const { formstepRpc } = require('../utils/request')
 const { listFields, answerOutputFields } = require('../utils/fields')
 const { REQUEST_SUMMARY_OUTPUT_FIELDS, SAMPLE_REQUEST_SUMMARY, REQUEST_ID_INPUT_FIELD, withIsoTimes } = require('../utils/request_summary')
 
@@ -25,7 +25,7 @@ async function outputFields(z, bundle) {
 }
 
 async function perform(z, bundle) {
-  return withIsoTimes(await formbaseRpc({ z, bundle, method: 'requests.get', params: { requestId: bundle.inputData.requestId } }))
+  return withIsoTimes(await formstepRpc({ z, bundle, method: 'requests.get', params: { requestId: bundle.inputData.requestId } }))
 }
 
 const create = {

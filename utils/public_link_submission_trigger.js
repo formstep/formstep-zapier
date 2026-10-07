@@ -1,6 +1,6 @@
 'use strict'
 
-const { formbaseRpc } = require('./request')
+const { formstepRpc } = require('./request')
 const { createHookTrigger } = require('./hook_trigger')
 const { EVENT_OUTPUT_FIELDS, SUBMISSION_OUTPUT_FIELDS } = require('./events')
 const { sampleEnvelope, sampleSubmission, sampleBookingAndPayment } = require('./samples')
@@ -16,7 +16,7 @@ const SUBMISSION_EVENTS = {
 }
 
 // The abandoned trigger's own input: how long a draft sits untouched before
-// formbase calls it abandoned. webhooks.create requires it for that event only,
+// Formstep calls it abandoned. webhooks.create requires it for that event only,
 // and rejects anything outside these choices with a readable VALIDATION_ERROR.
 const IDLE_WINDOW_INPUT_FIELD = {
   key: 'idleWindow',
@@ -28,7 +28,7 @@ const IDLE_WINDOW_INPUT_FIELD = {
   helpText: 'Fires after the submission has no saved changes for this long. The hourly sweep can add up to one hour.',
 }
 
-// The event envelope formbase sends: every answer once in `data.answers`
+// The event envelope Formstep sends: every answer once in `data.answers`
 // (keyed by field key), its readable text under the same key in `data.display`.
 function sampleFor(payloadType) {
   const bookingAndPayment = sampleBookingAndPayment({ name: 'Ada Lovelace', email: 'respondent@example.com' })
@@ -75,7 +75,7 @@ function createPublicLinkSubmissionTrigger({ event, key, label, description }) {
     subscribeParams: (bundle) => (isAbandoned ? { idleWindow: bundle.inputData.idleWindow } : {}),
     sample: sampleFor(payloadType),
     async performList(z, bundle) {
-      const sample = await formbaseRpc({ z, bundle, method: 'submissions.sample', params: { formId: bundle.inputData.formId } })
+      const sample = await formstepRpc({ z, bundle, method: 'submissions.sample', params: { formId: bundle.inputData.formId } })
       // submissions.sample always describes a completed submission; relabel it so an
       // updated or abandoned Zap tests against the event type it will receive.
       return { ...sample, type: payloadType }
