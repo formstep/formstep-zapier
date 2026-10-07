@@ -1,5 +1,12 @@
 # Changelog
 
+## Unreleased
+
+- Rename: formbase is now Formstep, at formstep.io. Every label, help text, sample and error message says Formstep, and the package is `formstep-zapier`. No trigger, action, search, input or auth key changes, so existing Zaps keep their mappings.
+- Update the API host: API calls and the OAuth authorize, token and refresh endpoints default to `https://api.formstep.io` instead of `https://api.formbase.so`. `BASE_URL` still overrides it. Existing connections stay: both hosts serve the same backend, so a token issued before the switch refreshes on the new host without reconnecting.
+- Update every trigger: a delivery is verified against `X-Formstep-Signature`, and the event headers are `X-Formstep-Event-Id` and `X-Formstep-Event-Type`. They replace `X-formbase-Signature`, `X-formbase-Event-Id` and `X-formbase-Event-Type`. The server sends only the new names, so this version ships together with the server switch: an older version rejects every delivery once the server sends the new headers. Subscriptions keep their signing secret, so no Zap needs to be turned off and on.
+- Update create/create_request and create/get_request: the sample request link reads `https://form.formstep.io/r/rq_example`. It said `forms.formbase.so`, but share links are served from `form.`.
+
 ## 4.4.2
 
 - Update create/create_request help texts. A hidden-field (context) value comes back in the request's Context and among the answers, which 4.4.1 got wrong. Delivery says Email needs a Pro or Business plan and that a filled-in Recipient Email gets the form's scheduled reminders even with None. External ID says reusing it with different inputs within 30 days fails. Behaviour is unchanged.
