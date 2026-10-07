@@ -5,7 +5,7 @@
  * attach documents to one.
  * Nothing is mocked below `z.request`.
  */
-const { FakeFormbase, ACCESS_TOKEN } = require('./fake-formbase')
+const { FakeFormbase, ACCESS_TOKEN } = require('./fake-formstep')
 const { makeZ } = require('./helpers')
 
 const FIELDS = [
@@ -125,7 +125,7 @@ test('a Zap goes from form picker to delivered submission and back to unsubscrib
   await expect(hydrators.downloadSubmissionPdf(z, { authData, inputData: { formId: 'form_live', submissionId: 'sub_1' } })).resolves.toBe(formbase.pdfUrl)
 
   // 6. A delivery signed with another secret never reaches the Zap.
-  const forged = { ...delivery, headers: { ...delivery.headers, 'x-formbase-signature': delivery.headers['x-formbase-signature'].replace(/sha256=.*/, `sha256=${'0'.repeat(64)}`) } }
+  const forged = { ...delivery, headers: { ...delivery.headers, 'x-formstep-signature': delivery.headers['x-formstep-signature'].replace(/sha256=.*/, `sha256=${'0'.repeat(64)}`) } }
   await expect(
     trigger.operation.perform(z, { authData, subscribeData, cleanedRequest: event, rawRequest: { headers: forged.headers, content: forged.content } })
   ).rejects.toThrow(/webhook signature/i)

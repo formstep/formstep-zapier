@@ -33,7 +33,7 @@ async function unsubscribe(z, bundle) {
 /** Throws unless the delivery is signed with this subscription's secret and is fresh. */
 function requireVerifiedDelivery(bundle) {
   if (!verifyWebhookSignature(bundle)) {
-    throw new Error('Invalid or expired formbase webhook signature.')
+    throw new Error('Invalid or expired Formstep webhook signature.')
   }
 }
 
@@ -45,7 +45,7 @@ function findSignatureHeader(headers) {
   if (!headers || typeof headers !== 'object') return undefined
   const entry = Object.entries(headers).find(([name]) => {
     const normalizedName = name.toLowerCase()
-    return normalizedName === 'http-x-formbase-signature' || normalizedName === 'x-formbase-signature'
+    return normalizedName === 'http-x-formstep-signature' || normalizedName === 'x-formstep-signature'
   })
   return entry?.[1]
 }

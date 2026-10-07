@@ -77,7 +77,7 @@ and `package-lock.json`, as required by the Zapier CLI.
     hydrate it fails loudly instead of dropping the output.
 - **Webhook verification** (`utils/webhooks.js`) — each subscription generates
   a unique signing secret, passes it to `webhooks.create`, stores it in
-  Zapier's `subscribeData`, and verifies `X-formbase-Signature` against the
+  Zapier's `subscribeData`, and verifies `X-Formstep-Signature` against the
   exact raw request body with HMAC-SHA256. Requests with a missing or invalid
   signature, or a timestamp more than five minutes old, are rejected.
 - **Create Request** (`creates/create_request.js`, `requests.create`) — the
@@ -241,7 +241,7 @@ formbase-zapier/
 │   └── request.js           # JSON-RPC transport + error mapping
 └── test/
     ├── helpers.js           # z stand-in, signed-delivery bundle
-    ├── fake-formbase.js     # in-process formbase API for the lifecycle test
+    ├── fake-formstep.js     # in-process formbase API for the lifecycle test
     ├── *.test.js            # unit tests (nock)
     └── lifecycle.integration.test.js
 ```

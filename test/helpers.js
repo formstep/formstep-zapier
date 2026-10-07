@@ -82,7 +82,7 @@ function makeSignedWebhookBundle(event, options = {}) {
     cleanedRequest: event,
     subscribeData: { signingSecret },
     rawRequest: {
-      headers: { 'Http-X-Formbase-Signature': signEvent(signingSecret, timestamp, content) },
+      headers: { 'Http-X-Formstep-Signature': signEvent(signingSecret, timestamp, content) },
       content,
     },
   }

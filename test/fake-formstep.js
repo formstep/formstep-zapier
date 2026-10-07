@@ -352,9 +352,9 @@ class FakeFormbase {
     return {
       headers: {
         'content-type': 'application/json',
-        'x-formbase-event-id': event.id,
-        'x-formbase-event-type': event.type,
-        'x-formbase-signature': signEvent(subscription.signingSecret, timestamp, content),
+        'x-formstep-event-id': event.id,
+        'x-formstep-event-type': event.type,
+        'x-formstep-signature': signEvent(subscription.signingSecret, timestamp, content),
       },
       content,
     }
