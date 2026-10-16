@@ -13,6 +13,7 @@ Native Zapier marketplace app for [Formstep](https://formstep.io). Formstep coll
 | Trigger | Public Link Submission Updated   | A respondent edited a public-link submission they already sent. The form must allow editing after submit.        |
 | Trigger | Public Link Submission Abandoned | A public-link draft sat idle for 12 hours, 1 day, 3 days or 1 week. Needs partial-submission tracking.           |
 | Action  | Create Request                   | Assign a published form to one recipient, with prefilled, read-only and context fields and documents. Returns the link. |
+| Action  | Create Request With New Form     | Build a form from JSON blocks, publish it and assign it to one recipient in one step. Returns the link and the new form's field keys. |
 | Action  | Get Request                      | Read a request, with its answers once it is completed.                                                           |
 | Action  | Remind Request                   | Email the recipient a reminder now.                                                                              |
 | Action  | Cancel Request                   | Withdraw a pending request, with an optional reason.                                                             |
@@ -23,9 +24,12 @@ Things that make a Zap easier to build:
 - **Form** dropdowns list the connected workspace's forms. A form that is not published yet says so: its triggers can be wired up already, but Create Request needs it published.
 - **Create Request** loads one input per field of the picked form: a dropdown for a choice question, line items for a repeating group, one input per row for a matrix, and a multi-select of the prefilled fields to lock.
 - **Documents** on Create Request, for a form with a Documents block: map files from earlier steps (an email attachment, a Google Drive or Dropbox file) and the recipient opens and downloads them in the form, below the documents the form already has. PDFs and images, up to 25 MB each; each keeps its own file name. A form with several Documents blocks also asks which block they go into.
+- **Create Request With New Form** needs no form built in the editor. The Zap sends the form's name and its blocks as JSON, optionally its logo, cover, emoji, theme, settings and translations, and Formstep builds, publishes and sends it in one call. The brand travels in the definition: keep it in the Zap and it goes out with every run. The same definition again reuses the form it made the first time (`form.reused: true`), so put per-recipient values in **Prefill** and **Context**, never in the name or a block. Block types and parameters: [Create a form and a request in one call](https://docs.formstep.io/requests/inline-forms/).
 - **Request** inputs (Get, Remind, Cancel) offer a dropdown of the newest requests, labelled by recipient, status and External ID, or an inline **Find Request** step.
 - Every trigger and Get Request label their answer outputs with the form's question titles once a form is picked. A booking and a payment answer map property by property (start time, amount, …).
 - **External ID** on Create Request is also the idempotency key: a replayed Zap run gets the same request back (`deduplicated: true`) instead of sending the recipient a second link.
+
+A form made by Create Request With New Form is listed in the **Form** dropdowns like any other once the first run has made it, so a Request Completed trigger can be set on it afterwards. Before that, a Zap reads the outcome with Get Request or Find Request, or posts it to its own Callback URL.
 
 Formstep posts every event once, to one trigger: a completed request fires **Request Completed** alone, never Public Link Submission Created. A Zap that wants every answer, whichever channel produced it, is one Zap on each trigger.
 
@@ -87,6 +91,19 @@ and `package-lock.json`, as required by the Zapier CLI.
   in the editor and the payload is rebuilt from the live field list on every
   run; two keys that encode the same fail loudly. The output is the created
   summary with the share link under `url`.
+- **Create Request With New Form** (`creates/create_request_with_new_form.js`,
+  `requests.create` with `form` instead of `formId`) — `formName`,
+  `formBlocks` (a JSON array), the optional `formLanguage` and `formEmoji`,
+  and the optional `formLogo`, `formCover`, `formTheme`, `formSettings` and
+  `formTranslations` (JSON objects) make up the `form` object; `prefill` and `context` are JSON objects keyed by block key,
+  `readonly` a list of keys. JSON inputs are parsed and shape-checked before
+  any call, naming the input that fails. The form does not exist before the
+  call, so there are no per-field inputs and no Documents input
+  (`documents.create` needs a form id). The output adds the `form` summary:
+  `id`, `name`, `reused`, `fields` and, when Formstep made a new form next to
+  one with the same questions, `similarForm`. The recipient, delivery,
+  reminder, expiry, External ID, metadata and test inputs are the ones Create
+  Request uses, from `utils/request_inputs.js`.
 - **Documents** (`utils/documents.js`) — a form with a Documents block gets a
   `documents` file list, plus a `documentsBlock` dropdown when it has several.
   Zapier hands each file over as a URL. After every other input has been
@@ -226,6 +243,7 @@ formstep-zapier/
 │   └── request_list.js      # hidden: Request dropdown
 ├── creates/
 │   ├── create_request.js    # requests.create with per-field prefill/context inputs
+│   ├── create_request_with_new_form.js  # requests.create with an inline form definition
 │   ├── get_request.js       # requests.get
 │   ├── remind_request.js    # requests.remind
 │   └── cancel_request.js    # requests.cancel
@@ -242,6 +260,7 @@ formstep-zapier/
 │   ├── dropdowns.js         # workspace lookup, form and request dropdown sources
 │   ├── documents.js         # download, reserve and upload Create Request documents
 │   ├── request_summary.js   # request output fields, sample, Request input
+│   ├── request_inputs.js    # recipient, delivery and other inputs both Create Request actions share
 │   └── request.js           # JSON-RPC transport + error mapping
 └── test/
     ├── helpers.js           # z stand-in, signed-delivery bundle

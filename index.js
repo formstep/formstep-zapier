@@ -14,6 +14,7 @@ const requestCanceled = require('./triggers/request_canceled')
 const formList = require('./triggers/form_list')
 const requestList = require('./triggers/request_list')
 const createRequest = require('./creates/create_request')
+const createRequestWithNewForm = require('./creates/create_request_with_new_form')
 const cancelRequest = require('./creates/cancel_request')
 const remindRequest = require('./creates/remind_request')
 const getRequest = require('./creates/get_request')
@@ -39,6 +40,7 @@ module.exports = {
   },
   creates: {
     [createRequest.key]: createRequest,
+    [createRequestWithNewForm.key]: createRequestWithNewForm,
     [cancelRequest.key]: cancelRequest,
     [remindRequest.key]: remindRequest,
     [getRequest.key]: getRequest,

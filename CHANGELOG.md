@@ -1,5 +1,11 @@
 # Changelog
 
+## 4.6.0
+
+- Add create/create_request_with_new_form, **Create Request With New Form**: build the form in the same step instead of picking a published one. The Zap sends a Form Name and Form Blocks (a JSON array of blocks), optionally a Form Language, Form Logo, Form Cover, Form Emoji, Form Theme, Form Settings and Form Translations, and Formstep builds the form, publishes it and creates the request in one `requests.create` call (`form` instead of `formId`). Prefill and Context are JSON objects keyed by block key. The output adds the form's id, name, whether it was reused, its field keys and, when one exists, a similar form the call did not reuse. The same definition again reuses the form it made. Needs a Formstep backend whose inline forms carry their own brand (`logo`, `cover`, `emoji`) and take no `baseline`.
+- Update create/create_request: the description points to Create Request With New Form. Inputs, outputs and behaviour are unchanged.
+- Internal: the recipient, delivery, reminder, expiry, External ID, metadata and test inputs, their params and the request outputs live in `utils/request_inputs.js`, shared by both Create Request actions.
+
 ## 4.5.0
 
 - Rename: formbase is now Formstep, at formstep.io. Every label, help text, sample and error message says Formstep, and the package is `formstep-zapier`. No trigger, action, search, input or auth key changes, so existing Zaps keep their mappings.

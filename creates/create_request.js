@@ -4,11 +4,16 @@ const { formstepRpc } = require('../utils/request')
 const { withIsoTimes } = require('../utils/request_summary')
 const { listFields, ZAPIER_TYPE_BY_FIELD_TYPE } = require('../utils/fields')
 const { uploadDocuments } = require('../utils/documents')
-
-const DELIVERY_CHOICES = {
-  none: 'None: the Zap sends the link itself',
-  email: 'Email: Formstep sends the invitation',
-}
+const {
+  isBlank,
+  nonBlankList,
+  recipientInputs,
+  languageInput,
+  requestOptionInputs,
+  requestOptionParams,
+  requestOutputFields,
+  requestSample,
+} = require('../utils/request_inputs')
 
 // Option-valued types whose answer is one option key …
 const SINGLE_CHOICE_TYPES = new Set(['radio', 'select'])
@@ -153,10 +158,6 @@ async function getFieldInputs(z, bundle) {
 
 // ─── payload ────────────────────────────────────────────────────────────────
 
-function isBlank(value) {
-  return value === undefined || value === null || value === ''
-}
-
 /** Zapier hands a mapped value as a string; the API wants the shape fields.list names. */
 function coerce(item, value) {
   if (item.type === 'date') return String(value).slice(0, 10)
@@ -232,52 +233,24 @@ function documentsBlockFor(items, input) {
   return input.documentsBlock
 }
 
-function parseExpiresAt(value) {
-  const expiresAt = Date.parse(value)
-  if (Number.isNaN(expiresAt)) throw new Error(`Expires At is not a date Zapier could parse: ${value}`)
-  return expiresAt
-}
-
-function nonBlankList(value) {
-  if (isBlank(value)) return []
-  return (Array.isArray(value) ? value : [value]).filter((entry) => !isBlank(entry))
-}
-
-/**
- * The `requests.create` params for one run. `idempotencyKey` is the external
- * id, so a replayed or re-run Zap gets the request it already created back
- * (`deduplicated: true`) instead of sending the recipient a second link.
- */
+/** The `requests.create` params for one run: the picked form, its field values, documents and the shared request options. */
 async function buildCreateParams(z, bundle) {
   const input = bundle.inputData
   const items = await listFields(z, bundle, input.formId)
   const { prefill, context } = buildFieldValues(items, input)
   const readonly = nonBlankList(input.readonly)
-  const reminders = nonBlankList(input.reminders)
-  const recipient = {
-    ...(isBlank(input.recipientEmail) ? {} : { email: input.recipientEmail }),
-    ...(isBlank(input.recipientName) ? {} : { name: input.recipientName }),
-  }
-  const metadata = input.metadata && typeof input.metadata === 'object' ? input.metadata : {}
-  const expiresAt = isBlank(input.expiresAt) ? undefined : parseExpiresAt(input.expiresAt)
+  const options = requestOptionParams(input)
   // Last, so a mistake in any other input never leaves an uploaded document behind.
   const files = nonBlankList(input.documents)
   const documents = files.length > 0 ? await uploadDocuments(z, bundle, input.formId, files, documentsBlockFor(items, input)) : []
 
   return {
     formId: input.formId,
-    ...(Object.keys(recipient).length > 0 ? { recipient } : {}),
-    ...(isBlank(input.language) ? {} : { language: input.language }),
+    ...options,
     ...(Object.keys(context).length > 0 ? { context } : {}),
     ...(Object.keys(prefill).length > 0 ? { prefill } : {}),
     ...(readonly.length > 0 ? { readonly } : {}),
-    ...(isBlank(input.externalId) ? {} : { externalId: input.externalId, idempotencyKey: input.externalId }),
-    ...(Object.keys(metadata).length > 0 ? { metadata } : {}),
-    ...(isBlank(input.delivery) ? {} : { delivery: input.delivery }),
-    ...(reminders.length > 0 ? { reminders } : {}),
     ...(documents.length > 0 ? { documents } : {}),
-    ...(expiresAt === undefined ? {} : { expiresAt }),
-    ...(input.test === true ? { test: true } : {}),
   }
 }
 
@@ -291,7 +264,7 @@ const create = {
   noun: 'Request',
   display: {
     label: 'Create Request',
-    description: 'Creates a request: assigns a published form to one recipient and returns the link to complete it.',
+    description: 'Creates a request: assigns a published form to one recipient and returns the link to complete it. To build the form in the same step, use Create Request With New Form.',
   },
   operation: {
     cleanInputData: false,
@@ -305,91 +278,14 @@ const create = {
         altersDynamicFields: true,
         helpText: 'The published form the recipient will complete. Its field keys appear below once it is chosen.',
       },
-      {
-        key: 'recipientEmail',
-        label: 'Recipient Email',
-        type: 'string',
-        required: false,
-        helpText: 'Required for email delivery and reminders.',
-      },
-      { key: 'recipientName', label: 'Recipient Name', type: 'string', required: false },
-      {
-        key: 'language',
-        label: 'Language',
-        type: 'string',
-        required: false,
-        helpText: 'A published language of the form, like en or de. Leave empty for the form default.',
-      },
-      {
-        key: 'delivery',
-        label: 'Delivery',
-        type: 'string',
-        required: false,
-        choices: DELIVERY_CHOICES,
-        default: 'none',
-        helpText:
-          'With None, send the Request URL this step returns through your own channel. Email needs a Pro or Business plan. With either, a filled-in Recipient Email gets the form’s scheduled reminders if the form has reminders on.',
-      },
-      {
-        key: 'reminders',
-        label: 'Reminders',
-        type: 'string',
-        list: true,
-        required: false,
-        helpText: 'Idle offsets like 2d or 5d, up to five. Leave empty to keep the form’s reminder schedule.',
-      },
-      {
-        key: 'expiresAt',
-        label: 'Expires At',
-        type: 'datetime',
-        required: false,
-        helpText: 'Defaults to 30 days from now; at most 365 days.',
-      },
-      {
-        key: 'externalId',
-        label: 'External ID',
-        type: 'string',
-        required: false,
-        helpText:
-          'Your id for this request, for Find Request later. It is also the idempotency key: a re-run Zap with the same External ID and inputs gets the same request back instead of creating a second one. The same External ID with different inputs within 30 days fails, so use a new one for each request.',
-      },
-      {
-        key: 'metadata',
-        label: 'Metadata',
-        dict: true,
-        required: false,
-        helpText: 'Caller-only bookkeeping. Never shown to the recipient; echoed on every request event.',
-      },
-      {
-        key: 'test',
-        label: 'Test Request',
-        type: 'boolean',
-        required: false,
-        helpText: 'A test request sends no email, counts against no quota, and starts no Zap: request triggers fire for real requests only.',
-      },
+      ...recipientInputs,
+      languageInput,
+      ...requestOptionInputs,
       getFieldInputs,
     ],
     perform,
-    sample: {
-      id: 'req_example000000000000',
-      status: 'pending',
-      url: 'https://form.formstep.io/r/rq_example',
-      deliveryStatus: 'not_requested',
-      expiresAt: '2026-06-25T12:00:00.000Z',
-      createdAt: '2026-05-26T12:00:00.000Z',
-      externalId: 'run-42',
-      deduplicated: false,
-    },
-    outputFields: [
-      { key: 'id', label: 'Request ID', type: 'string' },
-      { key: 'status', label: 'Status', type: 'string' },
-      { key: 'url', label: 'Request URL', type: 'string' },
-      { key: 'deliveryStatus', label: 'Delivery Status', type: 'string' },
-      { key: 'expiresAt', label: 'Expires At', type: 'datetime' },
-      { key: 'createdAt', label: 'Created At', type: 'datetime' },
-      { key: 'externalId', label: 'External ID', type: 'string' },
-      { key: 'deduplicated', label: 'Deduplicated', type: 'boolean' },
-    ],
+    sample: requestSample,
+    outputFields: requestOutputFields,
   },
 }
 
