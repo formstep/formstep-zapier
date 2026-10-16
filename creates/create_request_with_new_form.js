@@ -128,7 +128,7 @@ const create = {
         type: 'text',
         required: false,
         helpText:
-          'Optional JSON object: an icon, `{ "type": "icon", "name": "HeartIcon" }`, or your own image, `{ "type": "image", "url": "https://…/logo.png" }`. An image must be a public JPEG, PNG or WebP; Formstep keeps its own copy.',
+          'Optional JSON object: an icon, `{ "type": "icon", "name": "HeartIcon" }`, or your own image, `{ "type": "image", "url": "…" }` with the image’s public address as `url`. An image must be a JPEG, PNG or WebP anyone can open; Formstep keeps its own copy.',
       },
       {
         key: 'formCover',
@@ -136,7 +136,7 @@ const create = {
         type: 'text',
         required: false,
         helpText:
-          'Optional JSON object: a color, `{ "type": "color", "color": "#0f4c81" }`, or an image, `{ "type": "image", "url": "https://…/cover.jpg", "offsetY": 50 }`.',
+          'Optional JSON object: a color, `{ "type": "color", "color": "#0f4c81" }`, or an image, `{ "type": "image", "url": "…", "offsetY": 50 }` with the image’s public address as `url` and `offsetY` from 0 to 100 picking the part that shows.',
       },
       { key: 'formEmoji', label: 'Form Emoji', type: 'string', required: false, helpText: 'One emoji, shown beside the form name.' },
       {
