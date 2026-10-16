@@ -45,8 +45,9 @@ describe('create_request_with_new_form definition', () => {
     const byKey = Object.fromEntries(create.operation.inputFields.map((field) => [field.key, field]))
     expect(byKey.formName).toMatchObject({ required: true })
     expect(byKey.formBlocks).toMatchObject({ required: true, type: 'text' })
-    expect(byKey.baselineFormId).toMatchObject({ required: false, dynamic: 'form_list.id.label' })
+    expect(Object.keys(byKey)).toEqual(expect.arrayContaining(['formLanguage', 'formLogo', 'formCover', 'formEmoji', 'formTheme', 'formSettings', 'formTranslations']))
     expect(byKey.formId).toBeUndefined()
+    expect(byKey.baselineFormId).toBeUndefined()
     expect(Object.keys(byKey)).toEqual(
       expect.arrayContaining(['recipientEmail', 'recipientName', 'language', 'prefill', 'context', 'readonly', 'delivery', 'reminders', 'expiresAt', 'externalId', 'metadata', 'test'])
     )
@@ -65,12 +66,15 @@ describe('create_request_with_new_form perform', () => {
     expect(result.expiresAt).toBe('2026-11-15T00:00:00.000Z')
   })
 
-  test('sends the baseline, language, theme and settings, and the request options', async () => {
+  test('sends the language, brand, theme, settings and translations, and the request options', async () => {
     const { sent } = await createParamsFor({
-      baselineFormId: 'form_brand',
       formLanguage: 'de',
+      formLogo: '{ "type": "image", "url": "https://acme.example/logo.png" }',
+      formCover: '{ "type": "color", "color": "#0f4c81" }',
+      formEmoji: '🏦',
       formTheme: '{ "light": "solarized-light" }',
       formSettings: { showBranding: false },
+      formTranslations: '{ "en": { "Employment": "Employment" } }',
       recipientEmail: 'ada@example.com',
       recipientName: 'Ada',
       prefill: '{ "employment": "self_employed" }',
@@ -81,7 +85,17 @@ describe('create_request_with_new_form perform', () => {
       test: true,
     })
     expect(sent).toEqual({
-      form: { name: 'Documents', blocks: BLOCKS, baseline: 'form_brand', language: 'de', theme: { light: 'solarized-light' }, settings: { showBranding: false } },
+      form: {
+        name: 'Documents',
+        blocks: BLOCKS,
+        language: 'de',
+        logo: { type: 'image', url: 'https://acme.example/logo.png' },
+        cover: { type: 'color', color: '#0f4c81' },
+        emoji: '🏦',
+        theme: { light: 'solarized-light' },
+        settings: { showBranding: false },
+        translations: { en: { Employment: 'Employment' } },
+      },
       recipient: { email: 'ada@example.com', name: 'Ada' },
       prefill: { employment: 'self_employed' },
       context: { first_name: 'Ada' },
@@ -99,6 +113,7 @@ describe('create_request_with_new_form perform', () => {
     ['missing blocks', { formBlocks: '' }, /Form Blocks is required/],
     ['a prefill that is not an object', { prefill: '["a"]' }, /Prefill must be a JSON object/],
     ['settings that are not JSON', { formSettings: 'showBranding: false' }, /Form Settings is not valid JSON/],
+    ['a logo that is not an object', { formLogo: '"HeartIcon"' }, /Form Logo must be a JSON object/],
   ])('fails before calling Formstep on %s', async (_case, inputData, message) => {
     const scope = nock(FAKE_BASE).post('/api/v1').reply(200, { ok: true, data: CREATED })
     await expect(

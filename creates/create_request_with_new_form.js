@@ -50,15 +50,21 @@ function parseJsonInput(value, label, kind) {
 function buildFormDefinition(input) {
   const blocks = parseJsonInput(input.formBlocks, 'Form Blocks', 'array')
   if (blocks === undefined) throw new Error('Form Blocks is required: a JSON array of the form’s blocks.')
-  const settings = parseJsonInput(input.formSettings, 'Form Settings', 'object')
+  const logo = parseJsonInput(input.formLogo, 'Form Logo', 'object')
+  const cover = parseJsonInput(input.formCover, 'Form Cover', 'object')
   const theme = parseJsonInput(input.formTheme, 'Form Theme', 'object')
+  const settings = parseJsonInput(input.formSettings, 'Form Settings', 'object')
+  const translations = parseJsonInput(input.formTranslations, 'Form Translations', 'object')
   return {
     name: input.formName,
     blocks,
-    ...(isBlank(input.baselineFormId) ? {} : { baseline: input.baselineFormId }),
     ...(isBlank(input.formLanguage) ? {} : { language: input.formLanguage }),
-    ...(settings === undefined ? {} : { settings }),
+    ...(logo === undefined ? {} : { logo }),
+    ...(cover === undefined ? {} : { cover }),
+    ...(isBlank(input.formEmoji) ? {} : { emoji: input.formEmoji }),
     ...(theme === undefined ? {} : { theme }),
+    ...(settings === undefined ? {} : { settings }),
+    ...(translations === undefined ? {} : { translations }),
   }
 }
 
@@ -88,7 +94,7 @@ const create = {
   display: {
     label: 'Create Request With New Form',
     description:
-      'Builds a form from the blocks you send, publishes it and assigns it to one recipient in one step, then returns the link. The same form definition again reuses the form it made.',
+      'Builds a form from the blocks you send, publishes it and assigns it to one recipient in one step, then returns the link. The same form definition again reuses the form it made, so keep the brand in the definition and send it every run.',
   },
   operation: {
     inputFields: [
@@ -110,27 +116,36 @@ const create = {
           'A JSON array of 1 to 200 blocks, in form order. Each block is `{ "type": …, "key": …, … }` with the parameters of its block type: questions (text, contact, number, date, time, radio, checkbox, select, switch, rating, linearScale, matrix, ranking, pictureChoice, file, signature, decision), documents, payment, scheduleAppointment, content (header, paragraph, image, embedded, table, list, row) and structure (pageDivider, repeatingGroup, hiddenField, calculatedField, logic). Set `key` on every question: answers come back under it. See [Create a form and a request in one call](https://docs.formstep.io/requests/inline-forms/).',
       },
       {
-        key: 'baselineFormId',
-        label: 'Baseline Form',
-        type: 'string',
-        required: false,
-        dynamic: 'form_list.id.label',
-        helpText: 'A form to copy the logo, cover, theme, language, emails and notification settings from. Its questions are not copied.',
-      },
-      {
         key: 'formLanguage',
         label: 'Form Language',
         type: 'string',
         required: false,
-        helpText: 'The form’s UI language, like en or de. Defaults to the baseline form’s, else English.',
+        helpText: 'The form’s UI language, like en or de. Defaults to English.',
       },
+      {
+        key: 'formLogo',
+        label: 'Form Logo',
+        type: 'text',
+        required: false,
+        helpText:
+          'Optional JSON object: an icon, `{ "type": "icon", "name": "HeartIcon" }`, or your own image, `{ "type": "image", "url": "https://…/logo.png" }`. An image must be a public JPEG, PNG or WebP; Formstep keeps its own copy.',
+      },
+      {
+        key: 'formCover',
+        label: 'Form Cover',
+        type: 'text',
+        required: false,
+        helpText:
+          'Optional JSON object: a color, `{ "type": "color", "color": "#0f4c81" }`, or an image, `{ "type": "image", "url": "https://…/cover.jpg", "offsetY": 50 }`.',
+      },
+      { key: 'formEmoji', label: 'Form Emoji', type: 'string', required: false, helpText: 'One emoji, shown beside the form name.' },
       {
         key: 'formTheme',
         label: 'Form Theme',
         type: 'text',
         required: false,
         helpText:
-          'Optional JSON object with a look per color mode, like `{ "light": "solarized-light", "dark": "dracula" }`. A preset id is free on every plan. Wins over the baseline form’s theme for the mode it sets.',
+          'Optional JSON object with a look per color mode, like `{ "light": "solarized-light", "dark": "dracula" }`. A preset id is free on every plan.',
       },
       {
         key: 'formSettings',
@@ -138,7 +153,15 @@ const create = {
         type: 'text',
         required: false,
         helpText:
-          'Optional JSON object of form settings on top of the baseline’s, like `{ "showBranding": false, "notifyOnSubmission": true }`. Fields are named by key, and email copy may use `{{key}}`.',
+          'Optional JSON object of form settings, like `{ "showBranding": false, "notifyOnSubmission": true }`. Fields are named by key, and email copy may use `{{key}}`.',
+      },
+      {
+        key: 'formTranslations',
+        label: 'Form Translations',
+        type: 'text',
+        required: false,
+        helpText:
+          'Optional JSON object that publishes the form in more languages: `{ "de": { "<text as written in the blocks>": "<translation>" } }`. Every string of the form must be there, or Formstep lists the missing ones.',
       },
       ...recipientInputs,
       languageInput,

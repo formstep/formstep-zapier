@@ -24,7 +24,7 @@ Things that make a Zap easier to build:
 - **Form** dropdowns list the connected workspace's forms. A form that is not published yet says so: its triggers can be wired up already, but Create Request needs it published.
 - **Create Request** loads one input per field of the picked form: a dropdown for a choice question, line items for a repeating group, one input per row for a matrix, and a multi-select of the prefilled fields to lock.
 - **Documents** on Create Request, for a form with a Documents block: map files from earlier steps (an email attachment, a Google Drive or Dropbox file) and the recipient opens and downloads them in the form, below the documents the form already has. PDFs and images, up to 25 MB each; each keeps its own file name. A form with several Documents blocks also asks which block they go into.
-- **Create Request With New Form** needs no form built in the editor. The Zap sends the form's name and its blocks as JSON, optionally a **Baseline Form** to copy the logo, theme and emails from, and Formstep builds, publishes and sends it in one call. The same definition again reuses the form it made the first time (`form.reused: true`), so put per-recipient values in **Prefill** and **Context**, never in the name or a block. Block types and parameters: [Create a form and a request in one call](https://docs.formstep.io/requests/inline-forms/).
+- **Create Request With New Form** needs no form built in the editor. The Zap sends the form's name and its blocks as JSON, optionally its logo, cover, emoji, theme, settings and translations, and Formstep builds, publishes and sends it in one call. The brand travels in the definition: keep it in the Zap and it goes out with every run. The same definition again reuses the form it made the first time (`form.reused: true`), so put per-recipient values in **Prefill** and **Context**, never in the name or a block. Block types and parameters: [Create a form and a request in one call](https://docs.formstep.io/requests/inline-forms/).
 - **Request** inputs (Get, Remind, Cancel) offer a dropdown of the newest requests, labelled by recipient, status and External ID, or an inline **Find Request** step.
 - Every trigger and Get Request label their answer outputs with the form's question titles once a form is picked. A booking and a payment answer map property by property (start time, amount, …).
 - **External ID** on Create Request is also the idempotency key: a replayed Zap run gets the same request back (`deduplicated: true`) instead of sending the recipient a second link.
@@ -93,9 +93,9 @@ and `package-lock.json`, as required by the Zapier CLI.
   summary with the share link under `url`.
 - **Create Request With New Form** (`creates/create_request_with_new_form.js`,
   `requests.create` with `form` instead of `formId`) — `formName`,
-  `formBlocks` (a JSON array), and the optional `baselineFormId`,
-  `formLanguage`, `formTheme` and `formSettings` (JSON objects) make up the
-  `form` object; `prefill` and `context` are JSON objects keyed by block key,
+  `formBlocks` (a JSON array), the optional `formLanguage` and `formEmoji`,
+  and the optional `formLogo`, `formCover`, `formTheme`, `formSettings` and
+  `formTranslations` (JSON objects) make up the `form` object; `prefill` and `context` are JSON objects keyed by block key,
   `readonly` a list of keys. JSON inputs are parsed and shape-checked before
   any call, naming the input that fails. The form does not exist before the
   call, so there are no per-field inputs and no Documents input
