@@ -48,6 +48,32 @@ describe('formstepRpc', () => {
     await expect(formstepRpc({ z: makeZ(), bundle, method: 'me.get' })).rejects.toBeInstanceOf(ThrottledError)
   })
 
+  test('RATE_LIMITED waits as long as Formstep asks, in whole seconds', async () => {
+    nock(FAKE_BASE)
+      .post('/api/v1')
+      .reply(429, { ok: false, error: { code: 'RATE_LIMITED', message: 'slow down', details: { reason: 'RATE_LIMITED', retryAfterMs: 1500 } } })
+
+    await expect(formstepRpc({ z: makeZ(), bundle, method: 'requests.create' })).rejects.toMatchObject({ delay: 2 })
+  })
+
+  test('an error names the reason, the field and the valid keys Formstep gives', async () => {
+    nock(FAKE_BASE)
+      .post('/api/v1')
+      .reply(400, {
+        ok: false,
+        error: {
+          code: 'VALIDATION_ERROR',
+          message: 'No prefillable field with key "nope" on this form.',
+          details: { reason: 'UNKNOWN_FIELD_KEY', field: 'nope', validKeys: ['company_name', 'plan'] },
+        },
+      })
+
+    await expect(formstepRpc({ z: makeZ(), bundle, method: 'requests.create' })).rejects.toMatchObject({
+      code: 'VALIDATION_ERROR',
+      message: 'VALIDATION_ERROR: No prefillable field with key "nope" on this form. (Reason: UNKNOWN_FIELD_KEY. Field: nope. Valid keys: company_name, plan)',
+    })
+  })
+
   test('other API errors throw an Error carrying the Formstep code', async () => {
     nock(FAKE_BASE).post('/api/v1').reply(400, { ok: false, error: { code: 'VALIDATION_ERROR', message: 'bad params' } })
 

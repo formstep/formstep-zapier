@@ -1,6 +1,8 @@
-# Formstep Zapier Integration
+# Formstep for Zapier
 
-Native Zapier marketplace app for [Formstep](https://formstep.io). Formstep collects and verifies information from customers for workflows and AI agents: a Zap or an agent creates a request, the customer completes a branded form without an account, and the verified answers come back keyed by field key. This app creates, finds, reminds and cancels requests from a Zap, and resumes Zaps when a request is completed, expires or is canceled, or when a form is submitted.
+The [Formstep app on Zapier](https://zapier.com/apps/formstep/integrations). Formstep collects and verifies information from customers for workflows and AI agents: a Zap creates a request, the customer completes a branded form without an account, and the verified answers come back keyed by field key. This app creates, finds, reminds and cancels requests, and starts Zaps when a request is completed, expires or is canceled, or when a form is submitted through its public link.
+
+Step-by-step guides with screenshots: [Connect Formstep to Zapier](https://docs.formstep.io/guides/zapier/connect/), [Send a request from a Zap](https://docs.formstep.io/guides/zapier/send-a-request/), [Act on a request's outcome](https://docs.formstep.io/guides/zapier/request-outcome/), [Look up, remind and cancel requests](https://docs.formstep.io/guides/zapier/manage-requests/) and [Send public link submissions to another app](https://docs.formstep.io/guides/zapier/public-link-submissions/).
 
 ## What a Zap can do
 
@@ -19,19 +21,15 @@ Native Zapier marketplace app for [Formstep](https://formstep.io). Formstep coll
 | Action  | Cancel Request                   | Withdraw a pending request, with an optional reason.                                                             |
 | Search  | Find Request                     | Find requests by the External ID a Create Request step gave them.                                                |
 
-Things that make a Zap easier to build:
+## Good to know
 
-- **Form** dropdowns list the connected workspace's forms. A form that is not published yet says so: its triggers can be wired up already, but Create Request needs it published.
-- **Create Request** loads one input per field of the picked form: a dropdown for a choice question, line items for a repeating group, one input per row for a matrix, and a multi-select of the prefilled fields to lock.
-- **Documents** on Create Request, for a form with a Documents block: map files from earlier steps (an email attachment, a Google Drive or Dropbox file) and the recipient opens and downloads them in the form, below the documents the form already has. PDFs and images, up to 25 MB each; each keeps its own file name. A form with several Documents blocks also asks which block they go into.
-- **Create Request With New Form** needs no form built in the editor. The Zap sends the form's name and its blocks as JSON, optionally its logo, cover, emoji, theme, settings and translations, and Formstep builds, publishes and sends it in one call. The brand travels in the definition: keep it in the Zap and it goes out with every run. The same definition again reuses the form it made the first time (`form.reused: true`), so put per-recipient values in **Prefill** and **Context**, never in the name or a block. Block types and parameters: [Create a form and a request in one call](https://docs.formstep.io/requests/inline-forms/).
-- **Request** inputs (Get, Remind, Cancel) offer a dropdown of the newest requests, labelled by recipient, status and External ID, or an inline **Find Request** step.
-- Every trigger and Get Request label their answer outputs with the form's question titles once a form is picked. A booking and a payment answer map property by property (start time, amount, …).
-- **External ID** on Create Request is also the idempotency key: a replayed Zap run gets the same request back (`deduplicated: true`) instead of sending the recipient a second link.
-
-A form made by Create Request With New Form is listed in the **Form** dropdowns like any other once the first run has made it, so a Request Completed trigger can be set on it afterwards. Before that, a Zap reads the outcome with Get Request or Find Request, or posts it to its own Callback URL.
-
-Formstep posts every event once, to one trigger: a completed request fires **Request Completed** alone, never Public Link Submission Created. A Zap that wants every answer, whichever channel produced it, is one Zap on each trigger.
+- **Form** dropdowns list the connected workspace's forms; one that is not published yet says so. Create Request loads one input per field of the picked form, labelled with the question, and a multi-select of the prefilled fields to lock.
+- **Documents** on Create Request take files from earlier steps (an attachment, a Drive or Dropbox file); the recipient opens them in the form. PDFs and images, up to 25 MB each.
+- **Create Request With New Form** sends the form's blocks as JSON, and Formstep builds, publishes and sends it in one call. The same definition again reuses the form, so put per-recipient values in **Prefill** and **Context**, never in the name or a block. Blocks: [Create a form and a request in one call](https://docs.formstep.io/requests/inline-forms/).
+- **External ID** is also the idempotency key: a replayed Zap run gets the same request back (`deduplicated: true`) instead of a second link.
+- **Test Request** sends nothing and starts no Zap: request triggers fire for real requests only.
+- Every event fires one trigger: a completed request fires **Request Completed** alone, never Public Link Submission Created.
+- Request actions return times as ISO 8601. A failed call stops the step with the Formstep code, message and cause, such as `VALIDATION_ERROR: No prefillable field with key "nope" on this form. (Reason: UNKNOWN_FIELD_KEY. Field: nope. Valid keys: full_name, company_name)`. A rate limit makes Zapier wait as long as Formstep asks and retry.
 
 ## How it works
 
@@ -123,8 +121,9 @@ and `package-lock.json`, as required by the Zapier CLI.
 - **Get, Remind, Cancel** (`creates/`) and **Find Request**
   (`searches/find_request.js`, `requests.list` by external id, within a form
   or across the workspace) share the request summary outputs in
-  `utils/request_summary.js`. Timestamps of a request summary are Unix
-  milliseconds; event timestamps are ISO 8601.
+  `utils/request_summary.js`. Formstep returns a request's timestamps in Unix
+  milliseconds; `withIsoTimes` turns every `…At` time and the timeline into
+  ISO 8601, the shape events already carry.
 - **Dropdowns** (`utils/dropdowns.js`) — hidden triggers `form_list`
   (`form_list.id.label`, every page of `forms.list`) and `request_list`
   (`request_list.id.label`, `requests.list` one page per dropdown page, the
@@ -133,8 +132,9 @@ and `package-lock.json`, as required by the Zapier CLI.
 - **JSON-RPC client** (`utils/request.js`) — POSTs to `${BASE_URL}/api/v1` with
   `Authorization: Bearer <access_token>` and unwraps the `{ ok, data, error }`
   envelope. `UNAUTHORIZED` → `RefreshAuthError` (token refresh + retry),
-  `RATE_LIMITED` → `ThrottledError`, anything else → `Error("CODE: message")`
-  with `error.code` set. There is no `beforeRequest` middleware: the client sets
+  `RATE_LIMITED` → `ThrottledError` with Formstep's `retryAfterMs` as the
+  delay, anything else → `Error("CODE: message (Reason: …. Field: …)")` with
+  `error.code` set. There is no `beforeRequest` middleware: the client sets
   its own header, and a middleware would also run on the OAuth token and
   refresh requests.
 
@@ -184,7 +184,7 @@ npx convex run internal/oauthClients:seedZapierOAuthClient \
 
 # 3. Mirror onto the Zapier app version (injected as process.env.*). Secret MUST
 #    equal step 1's value.
-npx zapier-platform env:set 1.0.0 \
+npx zapier-platform env:set <version> \
   CLIENT_ID=fboc_zapier \
   CLIENT_SECRET='pick_a_long_random_secret'
 ```
@@ -200,29 +200,27 @@ with them — the server authenticates each client by its stored auth method.
 
 ```bash
 cd formstep-zapier
-npm install
+npm ci
 npm test                          # jest: unit tests (nock) + a lifecycle test against an in-process Formstep API
 npm run validate                  # Zapier's structural schema check, offline (CI runs it too)
 
-npx zapier-platform login --sso         # one-time
-npx zapier-platform register "Formstep"   # one-time; creates .zapierapprc
-npx zapier-platform validate            # adds Zapier's online style checks
-npx zapier-platform push
-npx zapier-platform promote 1.0.0
+npx zapier-platform login --sso   # one-time
+npx zapier-platform validate      # adds Zapier's online integration checks
 ```
 
-Before promoting a new version, run `npx zapier-platform env:get <version>` and
-check that `CLIENT_ID` and `CLIENT_SECRET` are set and `BASE_URL` is not.
-Existing Zaps keep their subscriptions and signing secrets across versions, so
-`npx zapier-platform migrate <old> <new>` moves them without turning any Zap off
-and on.
+Release a version:
+
+1. Bump `version` in `package.json` and `package-lock.json` and add a `CHANGELOG.md` entry.
+2. `npx zapier-platform push`. The new version is private until promoted, and copies `CLIENT_ID` and `CLIENT_SECRET` from the promoted one; check with `npx zapier-platform env:get <version>` (without printing the secret anywhere shared) that both are set and `BASE_URL` is not.
+3. Smoke it before users get it. `npx zapier-platform invoke <create|search|trigger> <key> -r -v <version> -a <connection id> -i '<json>'` runs an action on Zapier's servers with a real connection (list the ids with `-a -` in a terminal). For a trigger, build a Zap on the new version in the editor, publish it, fire the event, check Zap history, and turn it off.
+4. `npx zapier-platform promote <version>`, then `npx zapier-platform migrate <old> <new>` to move existing Zaps. Subscriptions and signing secrets survive a migration, so no Zap is turned off and on.
+
+Renaming or removing a trigger key that a live Zap uses fails the push with "Found live Zaps using deleted trigger"; keep keys stable.
 
 > CLI bin is `zapier-platform` (was `zapier`) since `zapier-platform-cli` v19.
 > `validate` needs the app registered first (expects `.zapierapprc`).
 
-For **marketplace submission**: fill App Details (logo, description, categories),
-provide demo credentials (a login bound to a demo workspace with a form), submit
-for Public review (~1–3 weeks).
+The app is public in beta in the Zapier App Directory. Zapier's integration checks still list T003 (a trigger with no recent live Zap task) and D004 (External ID looks like an ID without a dropdown; it is the caller's own key, so it takes no dropdown) as warnings that do not block.
 
 ## Reference
 

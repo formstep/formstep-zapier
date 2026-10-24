@@ -33,12 +33,32 @@ async function formstepRpc({ z, bundle, method, params }) {
 
   const code = payload?.error?.code || `HTTP_${response.status || 'UNKNOWN'}`
   const message = payload?.error?.message || `Formstep API error (${code})`
+  const details = payload?.error?.details
   if (code === 'UNAUTHORIZED') throw new z.errors.RefreshAuthError(message)
-  if (code === 'RATE_LIMITED') throw new z.errors.ThrottledError(message)
+  if (code === 'RATE_LIMITED') {
+    // Formstep says how long to wait; Zapier takes the delay in seconds.
+    const retryAfterMs = details?.retryAfterMs
+    throw new z.errors.ThrottledError(message, typeof retryAfterMs === 'number' ? Math.ceil(retryAfterMs / 1000) : undefined)
+  }
 
-  const error = new Error(`${code}: ${message}`)
+  const error = new Error(`${code}: ${message}${describeDetails(details)}`)
   error.code = code
   throw error
+}
+
+/**
+ * The specific cause Formstep gives behind a reused code: the reason, the
+ * parameter it concerns and the keys that would have worked, as Zapier shows
+ * them after the message. Empty when Formstep gives none.
+ */
+function describeDetails(details) {
+  if (!details) return ''
+  const causes = [
+    details.reason ? `Reason: ${details.reason}` : undefined,
+    details.field ? `Field: ${details.field}` : undefined,
+    Array.isArray(details.validKeys) && details.validKeys.length > 0 ? `Valid keys: ${details.validKeys.join(', ')}` : undefined,
+  ].filter(Boolean)
+  return causes.length > 0 ? ` (${causes.join('. ')})` : ''
 }
 
 module.exports = { formstepRpc, BASE_URL }

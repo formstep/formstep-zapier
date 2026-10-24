@@ -5,7 +5,13 @@ const http = require('http')
 const https = require('https')
 
 class RefreshAuthError extends Error {}
-class ThrottledError extends Error {}
+class ThrottledError extends Error {
+  // Zapier's ThrottledError takes the delay in seconds as its second argument.
+  constructor(message, delay) {
+    super(message)
+    this.delay = delay
+  }
+}
 
 /**
  * A stand-in for Zapier's `z`: `z.request` performs a real HTTP request (so
