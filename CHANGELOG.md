@@ -1,5 +1,13 @@
 # Changelog
 
+## 4.7.0
+
+- Update every action and search: an error names the cause Formstep gives behind its code, as in `VALIDATION_ERROR: No prefillable field with key "nope" on this form. (Reason: UNKNOWN_FIELD_KEY. Field: nope. Valid keys: full_name, company_name)` or `CONFLICT: This is a test request, so nothing is emailed for it; a reminder has nobody to write to. (Reason: TEST_REQUEST. Field: id)`. Before, only the message showed.
+- Update every action and search: when Formstep rate-limits a call, Zapier waits as long as Formstep's `retryAfterMs` asks before it retries, instead of its own default.
+- Update create/create_request_with_new_form: `cleanInputData` is off, as on every other action, so Zapier passes the inputs through as entered and the action handles empty ones itself (Zapier integration check D028). Behaviour is unchanged.
+- Internal: zapier-platform-core and zapier-platform-cli 19.2.1 (Zapier integration check D027).
+- The README opens with what a Zap can do and links to the guides on docs.formstep.io; the release steps cover pushing, smoke testing with `invoke -r`, promoting and migrating.
+
 ## 4.6.0
 
 - Add create/create_request_with_new_form, **Create Request With New Form**: build the form in the same step instead of picking a published one. The Zap sends a Form Name and Form Blocks (a JSON array of blocks), optionally a Form Language, Form Logo, Form Cover, Form Emoji, Form Theme, Form Settings and Form Translations, and Formstep builds the form, publishes it and creates the request in one `requests.create` call (`form` instead of `formId`). Prefill and Context are JSON objects keyed by block key. The output adds the form's id, name, whether it was reused, its field keys and, when one exists, a similar form the call did not reuse. The same definition again reuses the form it made. Needs a Formstep backend whose inline forms carry their own brand (`logo`, `cover`, `emoji`) and take no `baseline`.
