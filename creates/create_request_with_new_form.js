@@ -97,6 +97,7 @@ const create = {
       'Builds a form from the blocks you send, publishes it and assigns it to one recipient in one step, then returns the link. The same form definition again reuses the form it made, so keep the brand in the definition and send it every run.',
   },
   operation: {
+    cleanInputData: false,
     inputFields: [
       {
         key: 'formName',
