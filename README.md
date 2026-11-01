@@ -1,6 +1,6 @@
 # Formstep for Zapier
 
-The [Formstep app on Zapier](https://zapier.com/apps/formstep/integrations). Formstep collects structured data from people without the chasing: a Zap creates a request, the recipient completes a branded form without an account, and the validated answers come back keyed by field key. This app creates, finds, reminds and cancels requests, and starts Zaps when a request is completed, expires or is canceled, or when a form is submitted through its public link.
+The [Formstep app on Zapier](https://zapier.com/apps/formstep/integrations). Formstep requests information from people without the back-and-forth: a Zap creates a request, the recipient completes a branded form without an account, and the validated answers come back keyed by field key. This app creates, finds, reminds and cancels requests, and starts Zaps when a request is completed, expires or is canceled, or when a form is submitted through its public link.
 
 Step-by-step guides with screenshots: [Connect Formstep to Zapier](https://docs.formstep.io/guides/zapier/connect/), [Send a request from a Zap](https://docs.formstep.io/guides/zapier/send-a-request/), [Act on a request's outcome](https://docs.formstep.io/guides/zapier/request-outcome/), [Look up, remind and cancel requests](https://docs.formstep.io/guides/zapier/manage-requests/) and [Send public link submissions to another app](https://docs.formstep.io/guides/zapier/public-link-submissions/).
 
