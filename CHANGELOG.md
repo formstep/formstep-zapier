@@ -1,5 +1,9 @@
 # Changelog
 
+## 4.7.1
+
+- Update create/create_request and create/create_request_with_new_form help texts: the form's reminder schedule applies only with Delivery Email. With None, a recipient gets only the Reminders the step sets, and an empty Reminders field sends none. 4.4.2 said the form's schedule applies even with None. Behaviour is unchanged.
+
 ## 4.7.0
 
 - Update every action and search: an error names the cause Formstep gives behind its code, as in `VALIDATION_ERROR: No prefillable field with key "nope" on this form. (Reason: UNKNOWN_FIELD_KEY. Field: nope. Valid keys: full_name, company_name)` or `CONFLICT: This is a test request, so nothing is emailed for it; a reminder has nobody to write to. (Reason: TEST_REQUEST. Field: id)`. Before, only the message showed.
