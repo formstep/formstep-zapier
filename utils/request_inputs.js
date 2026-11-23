@@ -53,7 +53,7 @@ const requestOptionInputs = [
     choices: DELIVERY_CHOICES,
     default: 'none',
     helpText:
-      'With None, send the Request URL this step returns through your own channel. Email needs a Pro or Business plan. With either, a filled-in Recipient Email gets the form’s scheduled reminders if the form has reminders on.',
+      'With None, send the Request URL this step returns through your own channel. Email needs a Pro or Business plan. With Email, a filled-in Recipient Email gets the form’s scheduled reminders if the form has reminders on. With None, it gets only the Reminders you set below.',
   },
   {
     key: 'reminders',
@@ -61,7 +61,7 @@ const requestOptionInputs = [
     type: 'string',
     list: true,
     required: false,
-    helpText: 'Idle offsets like 2d or 5d, up to five. Leave empty to keep the form’s reminder schedule.',
+    helpText: 'Idle offsets like 2d or 5d, up to five. Leave empty for the form’s reminder schedule with Email delivery, or no reminders with None.',
   },
   {
     key: 'expiresAt',
